@@ -27,7 +27,7 @@ public:
     int offset_y = 0;     //小： 30
     int _offset_x = 1;    //正1 负0 小：0
     int _offset_y = 0;    //正1 负0 小：1
-    int offset_ratio = 15; //0~5° 精度0.1 1.5感觉最好
+    int offset_ratio = 0; //0~5° 精度0.1 1.5感觉最好
     Rect armor_roi;
     bool lost_success_armor = false; //上一帧是否找到装甲板
     bool success_armor = false;      //这一帧是否找到装甲板
@@ -88,6 +88,6 @@ public:
     int blue_armor_gray_th = 80;
     int blue_armor_color_th = 100;
     //红色th参数
-    int red_armor_gray_th = 40; //视频20
+    int red_armor_gray_th = 70; //视频20
     int red_armor_color_th = 70;
 };

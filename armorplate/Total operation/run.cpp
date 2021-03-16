@@ -91,21 +91,31 @@ void WorKing::Run()
         // }
         RotatedRect box = RotatedRect(Point(box_x, box_y), rgb.armor[armor.rect_num].size,
                         rgb.armor[armor.rect_num].angle);
-        RotatedRect left_light = RotatedRect(Point(rgb.light[rgb.light_subscript[armor.rect_num]].center.x+armor.armor_roi.x, rgb.light[rgb.light_subscript[armor.rect_num]].center.y+armor.armor_roi.y),
-                                  rgb.light[rgb.light_subscript[armor.rect_num]].size, rgb.light[rgb.light_subscript[armor.rect_num]].angle);
-        RotatedRect right_light = RotatedRect(Point(rgb.light[rgb.light_subscript[armor.rect_num+1]].center.x+armor.armor_roi.x, rgb.light[rgb.light_subscript[armor.rect_num+1]].center.y+armor.armor_roi.y),
-                                  rgb.light[rgb.light_subscript[armor.rect_num+1]].size, rgb.light[rgb.light_subscript[armor.rect_num+1]].angle);
-        // line(frame)
         rectangle(frame, box.boundingRect(), Scalar(0, 255, 0), 3, 8);
-        rectangle(frame, left_light.boundingRect(), Scalar(0, 255, 255), 9, 8);
-        rectangle(frame, right_light.boundingRect(), Scalar(0, 255, 255), 9, 8);
+        // RotatedRect left_light = RotatedRect(Point(rgb.light[rgb.light_subscript[armor.rect_num]].center.x+armor.armor_roi.x, rgb.light[rgb.light_subscript[armor.rect_num]].center.y+armor.armor_roi.y),
+                                  // rgb.light[rgb.light_subscript[armor.rect_num]].size, rgb.light[rgb.light_subscript[armor.rect_num]].angle);
+        // RotatedRect right_light = RotatedRect(Point(rgb.light[rgb.light_subscript[armor.rect_num+1]].center.x+armor.armor_roi.x, rgb.light[rgb.light_subscript[armor.rect_num+1]].center.y+armor.armor_roi.y),
+                                  // rgb.light[rgb.light_subscript[armor.rect_num+1]].size, rgb.light[rgb.light_subscript[armor.rect_num+1]].angle);
+        
+        // rectangle(frame, left_light.boundingRect(), Scalar(0, 255, 255), 9, 8);
+        // rectangle(frame, right_light.boundingRect(), Scalar(0, 255, 255), 9, 8);
+        int left_w = MIN(rgb.light[rgb.light_subscript[armor.rect_num]].size.width, rgb.light[rgb.light_subscript[armor.rect_num]].size.height);
+        int left_h = MAX(rgb.light[rgb.light_subscript[armor.rect_num]].size.width, rgb.light[rgb.light_subscript[armor.rect_num]].size.height);
+        int right_w = MIN(rgb.light[rgb.light_subscript[armor.rect_num+1]].size.width, rgb.light[rgb.light_subscript[armor.rect_num+1]].size.height);
+        int right_h = MAX(rgb.light[rgb.light_subscript[armor.rect_num+1]].size.width, rgb.light[rgb.light_subscript[armor.rect_num+1]].size.height);
+        RotatedRect light = RotatedRect(box.center, Size((left_w+right_w)/2, (left_h + right_h)/2), 0);
+        pnp.vertex_Sort(light);
+        pnp.run_SolvePnp(LIGHT_WIDITH, ARMORPLATE_HIGHT);
+        armor.depth = int(pnp.dist);
+        cout<<armor.depth<<endl;
+
         pnp.vertex_Sort(box);
         // pnp.arrange_Point(left_light, right_light);
-        float _w = MIN(box.size.width, box.size.height);
-        float _h = MAX(box.size.width, box.size.height);
+        float _w = MAX(box.size.width, box.size.height);
+        float _h = MIN(box.size.width, box.size.height);
         // cout << _w / _h << endl;
 
-        if (_w / _h >= 2.2)
+        if (_w / _h >= 1.8)
         {
           pnp.run_SolvePnp(BIG_ARMORPLATE_WIDITH, ARMORPLATE_HIGHT);
         }
@@ -140,41 +150,11 @@ void WorKing::Run()
         }
         // // test 半径补偿
 
-        armor.depth = int(pnp.dist);
-        // cout<<armor.depth<<endl;
-        // armor.yaw = armor.yaw + offset_x / 100;
-        // if(armor.depth <= 2000)
-        // {
-        //   armor.pitch = armor.pitch - (200/100);
-        // }
-        // else if(armor.depth > 2000 && armor.depth <= 2500)
-        // {
-        //     armor.pitch = armor.pitch - (450/100);
-        // }
-        // else if(armor.depth > 2500 && armor.depth <= 3000)
-        // {
-        //     armor.pitch = armor.pitch - (500/100);
-        // }
-        // else if(armor.depth > 3000 && armor.depth <= 3500)
-        // {
-        //     armor.pitch = armor.pitch - (592/100);
-        // }
-        // else if(armor.depth > 3500 && armor.depth <= 4000)
-        // {
-        //     armor.pitch = armor.pitch - (650/100);
-        // }
-        // else if(armor.depth > 4000 && armor.depth <= 4500)
-        // {
-        //     armor.pitch = armor.pitch - (700/100);
-        // }
-        // else if(armor.depth > 4500 && armor.depth <= 5000) 
-        // {
-        //   armor.pitch = armor.pitch - (750/100);
-        // }
-        // else
-        // {
-        //   armor.pitch = armor.pitch - (800/100);
-        // }
+        
+        //float actual_depth = 0.0002 * armor.depth * armor.depth + 0.1827 * armor.depth + 1303.6;
+        offset_y = 368.17 * log(armor.depth) - 2674.9;
+        offset_y = int(offset_y/100);
+        cout<<offset_y<<endl;
         if (_offset_x == 0)
         {
           armor.yaw = armor.yaw - offset_x / 100;
@@ -184,14 +164,25 @@ void WorKing::Run()
           armor.yaw = armor.yaw + offset_x / 100;
         }
 
-        if (_offset_y == 0)
+        // if (_offset_y == 0)
+        // {
+        if(offset_y < 0 || armor.depth < 1500)
         {
-          armor.pitch = armor.pitch - offset_y / 100;
+          offset_y = 0;
         }
-        else
+        else{
+          armor.pitch = armor.pitch - offset_y;
+        }
+                // }
+        // else
+        // {
+        //   armor.pitch = armor.pitch + offset_y / 100;
+        // }
+        if(armor.pitch < 0.4)
         {
-          armor.pitch = armor.pitch + offset_y / 100;
+          armor.is_shooting = 1;
         }
+
         if (armor.yaw > 0)
         {
           armor._yaw = 0;
@@ -208,7 +199,7 @@ void WorKing::Run()
         {
           armor._pitch = 1;
         }
-        // cout << armor.yaw << " ," << armor.pitch << endl;
+        cout << armor.yaw << " ," << armor.pitch << endl;
 
 
 #endif

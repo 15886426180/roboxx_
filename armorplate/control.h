@@ -81,7 +81,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 0
+#define SHOW_BIN_IMG 1
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -163,7 +163,7 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/gcurobot/armorplate/camera.xml"
+#define CAMERA_PARAM_FILE "/home/gcurobot/xx_git/armorplate/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置
@@ -185,7 +185,7 @@
  * 
  */
 //buff-filter(buff_detect.cpp)
-#define SHOW_ANGLE_INFORMATION 1
+#define SHOW_ANGLE_INFORMATION 0
 /**
   @brief: 是否打印PNP解算角度信息
   @param: 0     不打印
