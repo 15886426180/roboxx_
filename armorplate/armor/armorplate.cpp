@@ -246,35 +246,38 @@ bool LightBar::light_judge(int i, int j)
     float right_h = MAX(light[j].size.height, light[j].size.width);
     float right_w = MIN(light[j].size.height, light[j].size.width);
     // cout<<"111111111111111111111111111111111111"<<endl;
-    if (left_h < right_h * 1.7 && left_w > right_w * 0.5 && left_h > right_h * 0.5 && left_w < right_w * 1.7)
+    if (left_h < right_h * 1.65 && left_w > right_w * 0.5 && left_h > right_h * 0.65 && left_w < right_w * 1.7)
     {
         // cout<<"22222222222222222222222222222222222222"<<endl;
         // float h_ = MIN(left_h , right_h) / 2.0f;
         float h_max = (left_h + right_h) / 2.0f;
         // 两个灯条高度差不大
         // cout<<fabs(light[i].center.y - light[j].center.y)<<endl;
-        if (fabs(light[i].center.y - light[j].center.y) < h_max * 1.6)
+        if (fabs(light[i].center.y - light[j].center.y) < h_max * 1.6  && fabs(light[i].angle - light[j].angle)<= 5.0f)
         {
-            
-            //装甲板长宽比
-            float w_max = Distance(light[j].center , light[i].center);
-            // float h_max = (left_h + right_h) / 2.0f;
-            // cout<<w_max/h_max<<endl;
-            if (w_max < h_max * 2.5 && w_max > h_max * 0.5f)
-            {
-                /*change place*/
-                char_armor = 1;
-                // 100;
-                /*************/
-                return true;
-            }
+            // cout<<fabs(light[i].ang?le) - fabs(light[j].angle)<<endl;
+            // if(fabs(light[j].angle) - fabs(light[i].angle) < 0.4f)
+            // {
+                //装甲板长宽比
+                float w_max = Distance(light[j].center , light[i].center);
+                // float h_max = (left_h + right_h) / 2.0f;
+                // cout<<w_max/h_max<<endl;
+                if (w_max < h_max * 2.5 && w_max > h_max * 0.5f)
+                {
+                    /*change place*/
+                    char_armor = 1;
+                    // 100;
+                    /*************/
+                    return true;
+                }
 
-            if (w_max > h_max * 3.05f && w_max < h_max * 6.f)
-            {
-                /*change place*/
-                char_armor = 2;
-                return true;
-            }
+                if (w_max > h_max * 3.05f && w_max < h_max * 5.2f)
+                {
+                    /*change place*/
+                    char_armor = 2;
+                    return true;
+                }
+            // }
         }
     }
     return false;
@@ -346,20 +349,20 @@ int LightBar::optimal_armor()
 {
     size_t max = 0;
     int max_num = 0;
-    if (this->armor.size() <= 1)
+    if (this->armor.size() < 1)
         return 0;
     for (size_t i = 0; i < this->light_subscript.size(); i += 2)
     {
-        //灯条是“\\”或者“//”和“||”这样
+        // //灯条是“\\”或者“//”和“||”这样
         // cout<<fabs(this->light[this->light_subscript[i]].angle - this->light[this->light_subscript[i + 1]].angle)<<endl;
-        if (fabs(this->light[this->light_subscript[i]].angle - this->light[this->light_subscript[i + 1]].angle) < 8.0f)
-        {
-            this->priority.push_back(true);
-        }
-        else
-        {
-            continue;
-        }
+        // if (fabs(this->light[this->light_subscript[i]].angle - this->light[this->light_subscript[i + 1]].angle) < 3)
+        // {
+        //     this->priority.push_back(true);
+        // }
+        // else
+        // {
+        //     continue;
+        // }
 
         //灯条的高度差不超过最大灯条高度的四分之一
         int left_h = MAX(this->light[this->light_subscript[i]].size.width, this->light[this->light_subscript[i]].size.height);
@@ -372,7 +375,7 @@ int LightBar::optimal_armor()
         }
 
         //灯条高度差距不超过10%
-        if (left_h > h_ /2 || right_h > _h /2)
+        if (left_h > h_ /3.6 || right_h > _h /3.6)
         {
             this->priority.push_back(true);
         }
@@ -395,14 +398,14 @@ int LightBar::optimal_armor()
             this->priority.push_back(true);
         }
 
-        if (this->armor[i / 2].size.width / this->armor[i / 2].size.height < 1.5f)
+        if (this->armor[i / 2].size.width / this->armor[i / 2].size.height < 2.3f)
         {
             this->priority.push_back(true);
         }
-        else if (this->armor[i / 2].size.width / this->armor[i / 2].size.height >= 2)
-        {
-            continue;
-        }
+        // else if (this->armor[i / 2].size.width / this->armor[i / 2].size.height >= 2)
+        // {
+        //     continue;
+        // }
 
         if (this->priority.size() > 2)
         {

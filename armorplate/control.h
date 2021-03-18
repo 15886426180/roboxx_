@@ -17,7 +17,7 @@
   @param: 0         二维＋深度
   @param: 1         云台俯仰与偏航角度
 */
-#define SHOW_SERIAL_INFORMATION 0
+#define SHOW_SERIAL_INFORMATION 1
 /**
   @brief: 是否打印串口数据信息
   @param: 0     不打印
@@ -163,7 +163,7 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/gcurobot/xx_git/armorplate/camera.xml"
+#define CAMERA_PARAM_FILE "/home/gcurobot/xx_github/armorplate/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置
