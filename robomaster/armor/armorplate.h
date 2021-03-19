@@ -40,7 +40,7 @@ struct Armor_data
 class ImageProcess
 {
 public:
-    void Pretreat(Mat* frame, int enemy_color);
+    void Pretreat(Mat frame, int enemy_color);
     bool Processing();
     bool Light_judge(int i, int j);//判断左右灯条能否组成装甲板
     int Average_color();//计算图像颜色平均值
@@ -79,8 +79,8 @@ public:
     int blue_armor_gray_th = 80;
     int blue_armor_color_th = 100;
     //红色th参数
-    int red_armor_gray_th = 20; //视频20
-    int red_armor_color_th = 40;
+    int red_armor_gray_th = 60; //视频20
+    int red_armor_color_th = 80;
 
 
 };

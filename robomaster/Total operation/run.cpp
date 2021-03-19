@@ -30,10 +30,13 @@ void WorKing::Run()
     {
       capture >> frame;
     }
-    Mode_Selection();
+    
+    // Mode_Selection();
 #if ISOPEN_INDUSTRY_CAPTURE == 1
     resize(frame, frame, Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS));
 #endif
+    Mat src_img;
+
 #if ROI_IMG == 1
     // ROI
     if (img.lost_armor_success)
@@ -45,14 +48,17 @@ void WorKing::Run()
       src_img = frame; //直接赋值
       img.armor_roi = Rect(0, 0, 0, 0);
     }
-    
 #elif ROI_IMG == 0
     src_img = frame;
 #endif
+    enemy_color = 1;
+    pattern = 0;
+
     switch (this->pattern)
     {
     case 0://自瞄
-      img.Pretreat(&this->src_img, 1);
+      
+      img.Pretreat(src_img, enemy_color);
       data_success = img.Processing();
       if(data_success)
       {
@@ -66,8 +72,9 @@ void WorKing::Run()
         }
          
         RotatedRect box = RotatedRect(img.armor[img.optimal_armor].armor_rect.center + roi_tl, 
-            Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].width), 
+            Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].height), 
             img.armor[img.optimal_armor].tan_angle);
+        rectangle(frame, box.boundingRect(), Scalar(0, 255, 0), 3, 8);
         pnp.vertex_Sort(box);
         if(img.armor[img.optimal_armor].distinguish == 0)
         {
@@ -82,7 +89,6 @@ void WorKing::Run()
         depth = int(pnp.dist);
         //补偿角度
         Angle_compensate();
-
 #endif
 #if ROI_IMG == 1
         img.Roi_Range();
@@ -102,14 +108,14 @@ void WorKing::Run()
       
       break;
     }
-
+    imshow("frame", frame);
     cap.cameraReleasebuff();
 #if FPS_SHOW == 1
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency(); //结束计时
     int fps = int(1.0 / t);                                        //转换为帧率
     cout << "FPS: " << fps << endl;                                //输出帧率
 #endif
-    char c = waitKey(0);
+    char c = waitKey(1);
     if (c == 27) //"Esc"-退出
     {
       break;

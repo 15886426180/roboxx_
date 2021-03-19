@@ -29,7 +29,7 @@ public:
     
     
     Mat frame;//保留原图
-    Mat src_img;//ROI 图像
+    // Mat src_img;//ROI 图像
     
     int enemy_color = 1;//敌方颜色
     int pattern = 0;//模式选择

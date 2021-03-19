@@ -12,7 +12,7 @@
   @param: 0         二维＋深度
   @param: 1         云台俯仰与偏航角度
 */
-#define SHOW_SERIAL_INFORMATION 0
+#define SHOW_SERIAL_INFORMATION 1
 /**
   @brief: 是否打印串口数据信息
   @param: 0     不打印
@@ -32,7 +32,7 @@
  * @param: 1 调用
  * @param: 0 不调用
  */
-#define SHOW_ANGLE_INFORMATION 0
+#define SHOW_ANGLE_INFORMATION 1
 /**
   @brief: 是否打印PNP解算角度信息
   @param: 0     不打印
@@ -44,17 +44,13 @@
   @note: 使用普通USB相机时，Opencv的VideoCapture接口的值
 */
 
-#define ISOPEN_INDUSTRY_CAPTURE 1
+#define ISOPEN_INDUSTRY_CAPTURE 0
 /**
   @brief: 是否使用工业相机
   @param: 0     使用工业相机
   @param: 1     使用普通USB相机
 */
-#define MAXIMUM_LOSS 2
-/**
- * @brief 最大丢失次数
- * 
- */
+
 #define ROI_IMG 1
 /**
  * @brief 打开ROI截取
@@ -82,7 +78,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 1
+#define SHOW_BIN_IMG 0
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -96,7 +92,7 @@
  * @param 0 蓝色
  */
 
-#define IS_PARAM_ADJUSTMENT 1
+#define IS_PARAM_ADJUSTMENT 0
 /**
   @brief 是否进入调参模式
   @param 0     否
@@ -164,15 +160,10 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/gcurobot/armorplate/camera.xml"
+#define CAMERA_PARAM_FILE "/home/gcurobot/xx_github/robomaster/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置
- * 
- */
-#define PI 3.1415926
-/**
- * @brief π
  * 
  */
 // #define BIG_ARMORPLATE_WIDTH 25
