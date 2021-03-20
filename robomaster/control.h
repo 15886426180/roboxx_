@@ -57,7 +57,7 @@
  * @param 1 截取
  * @param 0 不截取 
  */
-#define FPS_SHOW 0
+#define FPS_SHOW 1
 /**
  * @brief 是否显示帧数
  * @param 1 显示

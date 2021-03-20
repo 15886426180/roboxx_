@@ -76,11 +76,11 @@ public:
     Point armor_center;//装甲板中心点
     int num = 0;//运行次数
     //蓝色th参数
-    int blue_armor_gray_th = 80;
-    int blue_armor_color_th = 100;
+    int blue_armor_gray_th = 70;
+    int blue_armor_color_th = 70;
     //红色th参数
-    int red_armor_gray_th = 60; //视频20
-    int red_armor_color_th = 80;
+    int red_armor_gray_th = 30; //视频20
+    int red_armor_color_th = 45;
 
 
 };

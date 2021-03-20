@@ -2,19 +2,19 @@
 #define KALMANTEST_H
 
 #include "configure.h"
-// #include "serialport.h"
 #include "control.h"
-
+#define ANTI_RANGE 1.01//指数增长的底数
+#define A 1.0e-8//给加速度a一个限定值(-A,A)之间
+#define MNC 1e-5//测量协方差矩阵R，更大会有更慢的回归
+#define DEAD_BAND 0
+#define SIZE_X 960
+#define SIZE_Y 480
 class RM_kalmanfilter
 {
 public:
     RM_kalmanfilter();
     ~RM_kalmanfilter();
     Point2f point_Predict(double g_runtime,Point2d current_point);
-
-    //pid修正
-    float point_dis(Point p1, Point p2);  // 两点距离
-    Point pid_Control_predictor(Point predict, Point local);  // PID控制,返回的是一个修正后的点
 
 private:
     Mat measurement_img;//测量矩阵
@@ -24,16 +24,6 @@ private:
     double runtime=(1e-2) + 0.005666666f;
     double last_v=0;
     int n=2;
-
-    //pid修正
-    int predict_x;  // 预测位x
-    int predict_y;  // 预测位y
-
-    int last_x;  // 当前装甲板x
-    int last_y;  // 当前装甲板y
-
-    int true_x;  // 修正后的x
-    int true_y;  // 修正后的y
 
 };
 

@@ -30,13 +30,11 @@ void WorKing::Run()
     {
       capture >> frame;
     }
-    
-    // Mode_Selection();
+    Mode_Selection();
 #if ISOPEN_INDUSTRY_CAPTURE == 1
     resize(frame, frame, Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS));
 #endif
     Mat src_img;
-
 #if ROI_IMG == 1
     // ROI
     if (img.lost_armor_success)
@@ -51,7 +49,7 @@ void WorKing::Run()
 #elif ROI_IMG == 0
     src_img = frame;
 #endif
-    enemy_color = 1;
+    enemy_color = 0;
     pattern = 0;
 
     switch (this->pattern)
@@ -63,14 +61,17 @@ void WorKing::Run()
       if(data_success)
       {
         data_type = 1;
-
-#if CALL_DEPTH_INFORMATION == 1
         Point2f roi_tl = Point2f(0, 0);
         if(img.lost_armor_success)
         {
           roi_tl = img.armor_roi.tl();
         }
-         
+#if CALL_KALMAN == 1
+        data_type = 1;
+        Point xx=kalman.point_Predict(t,img.armor[img.optimal_armor].armor_rect.center + roi_tl);
+
+#endif
+#if CALL_DEPTH_INFORMATION == 1
         RotatedRect box = RotatedRect(img.armor[img.optimal_armor].armor_rect.center + roi_tl, 
             Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].height), 
             img.armor[img.optimal_armor].tan_angle);
