@@ -12,7 +12,7 @@
   @param: 0         二维＋深度
   @param: 1         云台俯仰与偏航角度
 */
-#define SHOW_SERIAL_INFORMATION 1
+#define SHOW_SERIAL_INFORMATION 0
 /**
   @brief: 是否打印串口数据信息
   @param: 0     不打印
@@ -44,20 +44,20 @@
   @note: 使用普通USB相机时，Opencv的VideoCapture接口的值
 */
 
-#define ISOPEN_INDUSTRY_CAPTURE 0
+#define ISOPEN_INDUSTRY_CAPTURE 1
 /**
   @brief: 是否使用工业相机
   @param: 0     使用工业相机
   @param: 1     使用普通USB相机
 */
 
-#define ROI_IMG 1
+#define ROI_IMG 0
 /**
  * @brief 打开ROI截取
  * @param 1 截取
  * @param 0 不截取 
  */
-#define FPS_SHOW 1
+#define FPS_SHOW 0
 /**
  * @brief 是否显示帧数
  * @param 1 显示
@@ -78,7 +78,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 0
+#define SHOW_BIN_IMG 1
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -92,7 +92,7 @@
  * @param 0 蓝色
  */
 
-#define IS_PARAM_ADJUSTMENT 0
+#define IS_PARAM_ADJUSTMENT 1
 /**
   @brief 是否进入调参模式
   @param 0     否

@@ -30,7 +30,10 @@ void WorKing::Run()
     {
       capture >> frame;
     }
+
+    // 
     Mode_Selection();
+
 #if ISOPEN_INDUSTRY_CAPTURE == 1
     resize(frame, frame, Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS));
 #endif
@@ -49,34 +52,46 @@ void WorKing::Run()
 #elif ROI_IMG == 0
     src_img = frame;
 #endif
-    enemy_color = 0;
+    enemy_color = 1;
     pattern = 0;
 
     switch (this->pattern)
     {
     case 0://自瞄
       
-      img.Pretreat(src_img, enemy_color);
-      data_success = img.Processing();
-      if(data_success)
-      {
-        data_type = 1;
-        Point2f roi_tl = Point2f(0, 0);
-        if(img.lost_armor_success)
+        img.Pretreat(src_img, enemy_color);
+        data_success = img.Processing();
+        if(data_success)
         {
-          roi_tl = img.armor_roi.tl();
-        }
+            data_type = 1;
+            Point2f roi_tl = Point2f(0, 0);
+            if(img.lost_armor_success)
+            {
+                roi_tl = img.armor_roi.tl();
+            }
 #if CALL_KALMAN == 1
         data_type = 1;
-        Point xx=kalman.point_Predict(t,img.armor[img.optimal_armor].armor_rect.center + roi_tl);
+        Point kalman_point = kalman.point_Predict(t,img.armor[img.optimal_armor].armor_rect.center + roi_tl);
+        if(kalman_point.x > img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x)
+        {
+          offset_x+= 100;
+        }
+        else if(kalman_point.x < img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x) 
+        {
+          offset_x -= 100;
+        }
 
 #endif
+
 #if CALL_DEPTH_INFORMATION == 1
         RotatedRect box = RotatedRect(img.armor[img.optimal_armor].armor_rect.center + roi_tl, 
             Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].height), 
             img.armor[img.optimal_armor].tan_angle);
+        
         rectangle(frame, box.boundingRect(), Scalar(0, 255, 0), 3, 8);
+        
         pnp.vertex_Sort(box);
+        
         if(img.armor[img.optimal_armor].distinguish == 0)
         {
           pnp.run_SolvePnp(SMALL_ARMORPLATE_WIDTH, ARMORPLATE_HIGHT);
@@ -97,7 +112,10 @@ void WorKing::Run()
       }
       else
       {
-        Return_zero();//归零
+          Return_zero();//归零
+#if CALL_KALMAN == 1
+          kalman.reset();//卡尔曼清零
+#endif
       }
       img.Free_memory();
 #if CALL_SERIALPORT == 1
@@ -116,7 +134,7 @@ void WorKing::Run()
     int fps = int(1.0 / t);                                        //转换为帧率
     cout << "FPS: " << fps << endl;                                //输出帧率
 #endif
-    char c = waitKey(1);
+    char c = waitKey(100);
     if (c == 27) //"Esc"-退出
     {
       break;
@@ -144,8 +162,8 @@ void WorKing::Mode_Selection()
 {
   int ctrl_arr[REC_BUFF_LENGTH];
   serial.RMreceiveData(ctrl_arr);
-  this->enemy_color = ctrl_arr[1];
-  this->pattern = ctrl_arr[2];
+  enemy_color = ctrl_arr[1];
+  pattern = ctrl_arr[2];
 }
 /**
  * @brief 角度补偿

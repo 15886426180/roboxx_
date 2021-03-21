@@ -193,6 +193,30 @@ bool ImageProcess::Processing()
     return true;
 }
 
+double cross(Point a, Point b, Point c)
+{
+    return (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
+}
+/**
+ * @brief 判断旋转方向
+ * 
+ */
+void ImageProcess::Direction_judgment()
+{
+    if(num % 3 == 0)
+    {
+        a = armor[optimal_armor].armor_rect.center;
+        armor_direction = cross(a, b, c);
+    }
+    else if(num % 2 == 0)
+    {
+        b = armor[optimal_armor].armor_rect.center;
+    }
+    else{
+        c = armor[optimal_armor].armor_rect.center;
+    }
+    num++;
+}
 
 /**
  * @brief 多装甲板筛选
@@ -431,7 +455,7 @@ int ImageProcess::Average_color()
 
 void ImageProcess::Roi_Range()
 {
-        if (lost_armor_success)
+    if (lost_armor_success)
         {
           int point_x = armor[optimal_armor].armor_rect.center.x - 240 + armor_roi.x;
           int point_y = armor[optimal_armor].armor_rect.center.y - 150 + armor_roi.y;
@@ -484,5 +508,5 @@ void ImageProcess::Roi_Range()
             height = CAMERA_RESOLUTION_ROWS - point_y;
           }
           armor_roi = Rect(point_x, point_y, width, height);
-        }
+        }     
 }

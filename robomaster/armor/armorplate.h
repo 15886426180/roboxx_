@@ -50,7 +50,7 @@ public:
     void Free_memory();//释放内存
     int Motion_direction();//判断装甲板运动方向
     void Roi_Range();//ROI范围
-    
+    void Direction_judgment();//方向判断
     ImageProcess() {}
     ~ImageProcess() {}
     
@@ -81,8 +81,7 @@ public:
     //红色th参数
     int red_armor_gray_th = 30; //视频20
     int red_armor_color_th = 45;
-
-
+    Point a, b, c;//预测方向
 };
 
 

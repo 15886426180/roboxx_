@@ -86,7 +86,7 @@ public:
     int _offset_y = 0;         //正1 负0 小：1
     int offset_amplitude = 12; // 0~50 倍 20
     int offset_excursion = 31; //数值除以十 1~10 精度为0.1 10
-    int offset_preangle = PRE_ANGLE;
+    // int offset_preangle = PRE_ANGLE;
     int offset_ratio = 2; //0~5° 精度0.1 1.5感觉最好
 };
 
