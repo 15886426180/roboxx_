@@ -4,7 +4,7 @@ RM_kalmanfilter::RM_kalmanfilter()
     :KF_(4,2)
 {
     measurement_matrix = Mat::zeros(2,1,CV_32F);
-    t = 0.005;
+    t = 0.005*2;
     KF_.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, t, 0,
                                                  0, 1, 0, t,
                                                  0, 0, 1, 0,
@@ -54,5 +54,5 @@ Point2f RM_kalmanfilter::predict_point(double _t, Point _p)
 void RM_kalmanfilter::reset()
 {
     measurement_matrix = Mat::zeros(2,1,CV_32F);
-    t = 0.005; // FPS 200
+    t = 0.01; // FPS 200
 }

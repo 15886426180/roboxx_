@@ -51,6 +51,8 @@ public:
     int Motion_direction();//判断装甲板运动方向
     void Roi_Range();//ROI范围
     void Direction_judgment();//方向判断
+    void Speed_calculation();
+
     ImageProcess() {}
     ~ImageProcess() {}
     
@@ -66,21 +68,25 @@ public:
 
     Rect armor_roi;
 
+    Point lost_armor_center;
+    Point armor_center;//装甲板中心点
+    
     bool lost_armor_success = false;
     bool armor_success = false;
+
+    int amplitude = 0;//幅度
     int armor_count = 0;//装甲板计数
     int light_count = 0;//灯条计数
     int optimal_armor = 0;//最优装甲板
     int armor_position = 0;//装甲板在车的位置
     int armor_direction = 0;//1向右 -1 向左
-    Point armor_center;//装甲板中心点
     int num = 0;//运行次数
     //蓝色th参数
-    int blue_armor_gray_th = 70;
+    int blue_armor_gray_th = 50;
     int blue_armor_color_th = 70;
     //红色th参数
-    int red_armor_gray_th = 30; //视频20
-    int red_armor_color_th = 45;
+    int red_armor_gray_th = 142; //60 45
+    int red_armor_color_th = 95;//192 95 10.50
     Point a, b, c;//预测方向
 };
 

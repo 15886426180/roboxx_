@@ -32,7 +32,7 @@
  * @param: 1 调用
  * @param: 0 不调用
  */
-#define SHOW_ANGLE_INFORMATION 1
+#define SHOW_ANGLE_INFORMATION 0
 /**
   @brief: 是否打印PNP解算角度信息
   @param: 0     不打印
@@ -44,14 +44,14 @@
   @note: 使用普通USB相机时，Opencv的VideoCapture接口的值
 */
 
-#define ISOPEN_INDUSTRY_CAPTURE 1
+#define ISOPEN_INDUSTRY_CAPTURE 0
 /**
   @brief: 是否使用工业相机
   @param: 0     使用工业相机
   @param: 1     使用普通USB相机
 */
 
-#define ROI_IMG 0
+#define ROI_IMG 1
 /**
  * @brief 打开ROI截取
  * @param 1 截取

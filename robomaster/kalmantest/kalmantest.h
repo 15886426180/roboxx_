@@ -19,8 +19,8 @@ private:
     Mat measurement_matrix;
 
     double t = 0.005;
-    float x = CAMERA_RESOLUTION_COLS*0.5;
-    float y = CAMERA_RESOLUTION_ROWS*0.5;
+    float x = 640;
+    float y = 400;
 };
 
 #endif // RM_KALMANFILTER_H

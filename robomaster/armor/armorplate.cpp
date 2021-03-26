@@ -136,7 +136,7 @@ void ImageProcess::Find_light()
         float  _w = MIN(box.size.width, box.size.height);
         light_h_w = _w / _h;
         // cout <<light_h_w<<endl;
-        if (fabs(box.angle) < 40 && light_h_w < 0.4f)
+        if (fabs(box.angle) < 40 && light_h_w < 0.6f)
         {
             this->light.push_back(box); //保存灯条
             light_count ++;
@@ -189,13 +189,13 @@ bool ImageProcess::Processing()
 
     //多装甲板筛选
     Armor_screening();
-    
+    Direction_judgment();
     return true;
 }
 
 double cross(Point a, Point b, Point c)
 {
-    return (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
+    return ((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x));
 }
 /**
  * @brief 判断旋转方向
@@ -203,17 +203,17 @@ double cross(Point a, Point b, Point c)
  */
 void ImageProcess::Direction_judgment()
 {
-    if(num % 3 == 0)
+    if(num > 0)
     {
-        a = armor[optimal_armor].armor_rect.center;
-        armor_direction = cross(a, b, c);
-    }
-    else if(num % 2 == 0)
-    {
-        b = armor[optimal_armor].armor_rect.center;
-    }
-    else{
-        c = armor[optimal_armor].armor_rect.center;
+        amplitude = Distance(lost_armor_center ,armor_center);
+        if(amplitude < 100)
+        {
+            amplitude = lost_armor_center.x - armor_center.x;
+            
+        }
+        else{
+            amplitude = 0;
+        }
     }
     num++;
 }
@@ -261,7 +261,7 @@ void ImageProcess::Armor_screening()
             }
             
             //判断装甲板在车的左右
-            cout<<armor[i].tan_angle<<endl;
+            // cout<<armor[i].tan_angle<<endl;
             if(armor[i].tan_angle <= 5 && armor[i].tan_angle >= -5)//中
             {
                 armor[i].priority +=2;
@@ -314,6 +314,7 @@ void ImageProcess::Armor_screening()
     imshow("draw", draw_img);
     draw_img = Mat::zeros(frame.size(), CV_8UC3);
 #endif
+    lost_armor_center = armor_center;
     armor_position = armor[optimal_armor].position;
     armor_center = armor[optimal_armor].armor_rect.center;
 }
@@ -404,7 +405,7 @@ bool ImageProcess::Light_judge(int i, int j)
                         return true;
                     }
                     
-                    if (armor_data.aspect_ratio > 3.05f && armor_data.aspect_ratio < 4.1f)
+                    if (armor_data.aspect_ratio > 3.05f && armor_data.aspect_ratio < 4.5f)
                     {
                         armor_data.distinguish = 1;//大装甲板
                         return true;
@@ -448,7 +449,7 @@ int ImageProcess::Average_color()
     }
     Mat roi = gray_img(_rect);;
     int average_intensity = static_cast<int>(mean(roi).val[0]);
-    cout<<"average_intensity = "<<average_intensity<<endl;
+    // cout<<"average_intensity = "<<average_intensity<<endl;
     return average_intensity;
 }
 
@@ -456,57 +457,52 @@ int ImageProcess::Average_color()
 void ImageProcess::Roi_Range()
 {
     if (lost_armor_success)
-        {
-          int point_x = armor[optimal_armor].armor_rect.center.x - 240 + armor_roi.x;
-          int point_y = armor[optimal_armor].armor_rect.center.y - 150 + armor_roi.y;
-          int width = 480;
-          int height = 300;
+    {
+        int point_x = armor[optimal_armor].armor_rect.center.x - 240 + armor_roi.x;
+        int point_y = armor[optimal_armor].armor_rect.center.y - 150 + armor_roi.y;
+        int width = 480;
+        int height = 300;
 
-            if (point_x < 0)
-            {
-              point_x = 0;
-            }
-            if (point_y < 0)
-            {
-              point_y = 0;
+        if (point_x < 0)
+        {
+            point_x = 0;
+        }
+        if (point_y < 0)
+        {
+            point_y = 0;
             }
             if (point_x + width >= CAMERA_RESOLUTION_COLS)
             {
-              width = CAMERA_RESOLUTION_COLS - abs(point_x);
+            width = CAMERA_RESOLUTION_COLS - abs(point_x);
             }
             if (point_y + height >= CAMERA_RESOLUTION_ROWS)
             {
-              height = CAMERA_RESOLUTION_ROWS - abs(point_y);
+            height = CAMERA_RESOLUTION_ROWS - abs(point_y);
             }
             armor_roi = Rect(point_x, point_y, width, height);
-            // armor[optimal_armor].armor_rect = RotatedRect(
-                // Point(armor[optimal_armor].armor_rect.center.x + armor_roi.x,
-                    //   armor[optimal_armor].armor_rect.center.y + armor_roi.y),
-                // Size(armor[optimal_armor].width, armor[optimal_armor].height), armor[optimal_armor].tan_angle);
-            // rectangle(frame, armor_roi, Scalar(0, 255, 255), 3, 8);
         }
         else
         {
-          int point_x = armor[optimal_armor].armor_rect.center.x - 240;
-          int point_y = armor[optimal_armor].armor_rect.center.y - 150;
-          int width = 480;
-          int height = 300;
-          if (point_x < 0)
-          {
-            point_x = 0;
-          }
-          if (point_y < 0)
-          {
-            point_y = 0;
-          }
-          if (point_x + width >= CAMERA_RESOLUTION_COLS)
-          {
-            width = CAMERA_RESOLUTION_COLS - point_x;
-          }
-          if (point_y + height >= CAMERA_RESOLUTION_ROWS)
-          {
-            height = CAMERA_RESOLUTION_ROWS - point_y;
-          }
-          armor_roi = Rect(point_x, point_y, width, height);
+            int point_x = armor[optimal_armor].armor_rect.center.x - 240;
+            int point_y = armor[optimal_armor].armor_rect.center.y - 150;
+            int width = 480;
+            int height = 300;
+            if (point_x < 0)
+            {
+                point_x = 0;
+            }
+            if (point_y < 0)
+            {
+                point_y = 0;
+            }
+            if (point_x + width >= CAMERA_RESOLUTION_COLS)
+            {
+                width = CAMERA_RESOLUTION_COLS - point_x;
+            }
+            if (point_y + height >= CAMERA_RESOLUTION_ROWS)
+            {
+                height = CAMERA_RESOLUTION_ROWS - point_y;
+            }
+            armor_roi = Rect(point_x, point_y, width, height);
         }     
 }
