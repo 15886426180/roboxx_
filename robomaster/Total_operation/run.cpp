@@ -60,7 +60,8 @@ void WorKing::Run()
     {
     case 0://自瞄
         
-        img.Pretreat(src_img, enemy_color);
+        // img.Pretreat(src_img, enemy_color);
+        img.Pretreat_hsv(src_img, enemy_color);
         data_success = img.Processing();
         if(data_success)
         {
@@ -84,18 +85,18 @@ void WorKing::Run()
 #if CALL_KALMAN == 1
         data_type = 1;
         Point kalman_point = kalman.predict_point(t,img.armor[img.optimal_armor].armor_rect.center + roi_tl);
-        circle(frame, kalman_point, 10, Scalar(0, 0, 255), -1);
-        if(kalman_point.x > img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x)
-        {
-          offset_x = 800;
-        }
-        else if(kalman_point.x < img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x) 
-        {
-          offset_x = 800;
-        }
-        else{
-          offset_x = 100;
-        }
+        // circle(frame, kalman_point, 10, Scalar(0, 0, 255), -1);
+        // if(kalman_point.x > img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x)
+        // {
+        //   offset_x = 800;
+        // }
+        // else if(kalman_point.x < img.armor[img.optimal_armor].armor_rect.center.x + roi_tl.x) 
+        // {
+        //   offset_x = 800;
+        // }
+        // else{
+        //   offset_x = 100;
+        // }
 
 #endif
 
@@ -202,7 +203,7 @@ void WorKing::Angle_compensate()
     yaw = yaw + offset_x / 100;
   }
   int dist = depth;
-  cout<<dist<<endl;
+  // cout<<dist<<endl;
   if(firing == 1)
   {
     offset_y = 0.1616*dist + 96.644;
@@ -238,40 +239,7 @@ void WorKing::Angle_compensate()
         }
     }
   }
-   
-  // if (_offset_y == 0)
-  // {
-  //   pitch = pitch - offset_y / 100;
-  // }
-  // else
-  // {
-  //   pitch = pitch + offset_y / 100;
-  // }
-  // switch (dist)
-  // {
-  // case 1:
-  //   offset_y = 200;
-  //   break;
-  // case 2:
-  //   offset_y = 400;
-  //   break;
-  // case 3:
-  //   offset_y = 600;
-  //   break;
-  // case 4:
-  //   offset_y = 800;
-  //   break;
-  // case 5:
-  //   offset_y = 750;
-  //   break;
-  // case 6:
-  //   offset_y = 800;
-  //   break;
-  // default:
-  //   break;
-  // }
   pitch = pitch - offset_y / 100;
-
   if (yaw > 0)
   {
     _yaw = 0;

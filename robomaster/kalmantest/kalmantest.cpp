@@ -4,7 +4,7 @@ RM_kalmanfilter::RM_kalmanfilter()
     :KF_(4,2)
 {
     measurement_matrix = Mat::zeros(2,1,CV_32F);
-    t = 0.005*2;
+    t = 0.005;
     KF_.transitionMatrix = (Mat_<float>(4, 4) << 1, 0, t, 0,
                                                  0, 1, 0, t,
                                                  0, 0, 1, 0,

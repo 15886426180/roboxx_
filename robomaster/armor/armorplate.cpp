@@ -30,7 +30,63 @@ void ImageProcess::Free_memory()
         }
     }
 }
+void ImageProcess::Pretreat_hsv(Mat src_img, int enemy_color)
+{
+    //保存原图像
+    this->frame = src_img;
+    // imshow(" ", frame);
+    //转灰度图
+    Mat gray_img, hsv_img;
 
+    Mat bin_img_color, bin_img_gray;
+    cvtColor(this->frame, gray_img, COLOR_BGR2GRAY);
+    cvtColor(this->frame, hsv_img, COLOR_BGR2HSV_FULL);
+#if IS_PARAM_ADJUSTMENT == 1
+    namedWindow("src_img", WINDOW_AUTOSIZE);
+    createTrackbar("H_MIN:", "src_img", &h_min, 255, NULL);
+    createTrackbar("H_MAX:", "src_img", &h_max, 255, NULL);
+    createTrackbar("S_MIN:", "src_img", &s_min, 255, NULL);
+    createTrackbar("S_MAX:", "src_img", &s_max, 255, NULL);
+    createTrackbar("V_MIN:", "src_img", &v_min, 255, NULL);
+    createTrackbar("V_MAX:", "src_img", &v_max, 255, NULL);
+#endif
+    if (enemy_color == 0)
+    {
+        // createTrackbar("GRAY_TH_BLUE:", "src_img", &blue_armor_gray_th, 255, NULL);
+        //115 173 136 255 90 255 blue
+#if IS_PARAM_ADJUSTMENT == 0
+        h_min = 115;
+        h_max = 173;
+#endif
+        inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
+        threshold(gray_img, bin_img_gray, this->blue_armor_gray_th, 255, THRESH_BINARY);
+    }
+    else if (enemy_color == 1)
+    {
+        //0 80 116 222 21 95 red
+#if IS_PARAM_ADJUSTMENT == 0
+        h_min = 0;
+        h_max = 80;
+#endif
+        inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
+        threshold(gray_img, bin_img_gray, this->blue_armor_gray_th, 255, THRESH_BINARY);
+    }
+    Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
+    // Mat element_erode = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
+    // erode(bin_img_color, bin_img_color, element_erode);
+    // dilate(bin_img_gray, bin_img_gray, element);
+    // dilate(bin_img_color, bin_img_color, element);
+    // bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
+    dilate(bin_img_color, bin_img_color, element);
+#if SHOW_BIN_IMG == 1    
+    imshow("gray_img", bin_img_gray);
+    imshow("mask", bin_img_color);
+    imshow("src_img", bin_img_color);
+#endif
+    //保存处理后的图片
+    this->mask = bin_img_color;
+    this->gray_img = bin_img_gray;
+}
 /**
  * @brief 图像预处理
  * 
@@ -116,7 +172,7 @@ void ImageProcess::Find_light()
     {
         perimeter = arcLength(contours[i], true); 
         //轮廓周长
-        if (perimeter < 200 && perimeter > 4000 && contours[i].size() < 5 && contourArea(contours[i]) < 5000)
+        if (perimeter < 200 && perimeter > 4000 && contours[i].size() < 5)
         {
             continue;
         }
@@ -135,7 +191,7 @@ void ImageProcess::Find_light()
         float  _h = MAX(box.size.width, box.size.height);
         float  _w = MIN(box.size.width, box.size.height);
         light_h_w = _w / _h;
-        // cout <<light_h_w<<endl;
+        cout <<light_h_w<<endl;
         if (fabs(box.angle) < 40 && light_h_w < 0.6f)
         {
             this->light.push_back(box); //保存灯条
@@ -289,7 +345,7 @@ void ImageProcess::Armor_screening()
             //优先小装甲板
             if(armor[i].distinguish == 0)
             {
-                armor[i].priority +=1;
+                armor[i].priority += 1;
             }
 
             if(armor[i].priority > max_priority)
@@ -298,11 +354,11 @@ void ImageProcess::Armor_screening()
             }
             else if(armor[i].priority == max_priority)//优先级相同比较高度
             {
-                if(fabs(armor[i].tan_angle) < fabs(armor[optimal_armor].tan_angle))
+                if(fabs(armor[i].height) > fabs(armor[optimal_armor].height))
                 {
                     optimal_armor = i;
                 }
-                else if(armor[i].height > armor[optimal_armor].height)
+                if(armor[i].tan_angle < armor[optimal_armor].tan_angle)
                 {
                     optimal_armor = i;
                 }
@@ -348,6 +404,7 @@ void ImageProcess::Fitting_armor()
             //计算灯条中心点形成的斜率
             float error_angle = atan((light[light_right].center.y - light[light_left].center.y) / (light[light_right].center.x - light[light_left].center.x));
             // cout<<error_angle<<endl;
+
             if (error_angle < 5.0f)
             {
                 armor_data.tan_angle = atan(error_angle) * 180 / CV_PI;
@@ -382,9 +439,9 @@ bool ImageProcess::Light_judge(int i, int j)
     armor_data.max_light_h = MAX(armor_data.right_light_height, armor_data.left_light_height);
     armor_data.left_right_h = armor_data.left_light_height / armor_data.right_light_height;
     armor_data.left_right_w = armor_data.left_light_width / armor_data.right_light_width;
-    if (armor_data.left_right_h < 1.2 
+    if (armor_data.left_right_h < 1.5 
             && armor_data.left_right_w > 0.2 
-            && armor_data.left_right_h > 0.8
+            && armor_data.left_right_h > 0.7
             && armor_data.left_right_w < 2)
     {
         armor_data.height = (armor_data.right_light_height + armor_data.left_light_height) / 2.0f;
@@ -398,18 +455,23 @@ bool ImageProcess::Light_judge(int i, int j)
                 // cout<<armor_data.left_light.angle - armor_data.right_light.angle<<endl;
                 if(armor_data.left_light.angle - armor_data.right_light.angle < 8)//两侧灯条角度差
                 {
-                    //装甲板长宽比
-                    if (armor_data.aspect_ratio < 2.5f && armor_data.aspect_ratio > 0.5f)
+                    if(armor_data.width*armor_data.height > 500)
                     {
-                        armor_data.distinguish = 0;//小装甲板
-                        return true;
+                        // cout<< armor_data.aspect_ratio<<endl;
+                        //装甲板长宽比
+                        if (armor_data.aspect_ratio < 2.5f && armor_data.aspect_ratio > 1.5f)
+                        {
+                            armor_data.distinguish = 0;//小装甲板
+                            return true;
+                        }
+                        
+                        if (armor_data.aspect_ratio > 2.55f && armor_data.aspect_ratio < 4.1f)
+                        {
+                            armor_data.distinguish = 1;//大装甲板
+                            return true;
+                        }
                     }
                     
-                    if (armor_data.aspect_ratio > 3.05f && armor_data.aspect_ratio < 4.5f)
-                    {
-                        armor_data.distinguish = 1;//大装甲板
-                        return true;
-                    }
                 }
             }
         }

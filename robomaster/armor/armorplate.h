@@ -51,8 +51,9 @@ public:
     int Motion_direction();//判断装甲板运动方向
     void Roi_Range();//ROI范围
     void Direction_judgment();//方向判断
+    
     void Speed_calculation();
-
+    void Pretreat_hsv(Mat src_img, int enemy_color);//hsv预处理
     ImageProcess() {}
     ~ImageProcess() {}
     
@@ -86,8 +87,15 @@ public:
     int blue_armor_color_th = 70;
     //红色th参数
     int red_armor_gray_th = 142; //60 45
-    int red_armor_color_th = 95;//192 95 10.50
+    int red_armor_color_th = 100;//192 95 10.50
     Point a, b, c;//预测方向
+
+    int h_min = 0;//0 80 116 222 21 95 red
+    int h_max = 80;//115 173 136 255 90 255 blue
+    int s_min = 136;
+    int s_max = 255;
+    int v_min = 140;
+    int v_max = 255;
 };
 
 
