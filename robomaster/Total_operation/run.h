@@ -18,6 +18,7 @@ public:
     void Return_zero();//归零
     void Angle_compensate();//pnp计算角度补偿
     void Mode_Selection(); // 模式选择
+    void Automatic_fire();//自动开火
 
     ImageProcess img;
     Max_Buff buff;
@@ -43,7 +44,7 @@ public:
     int data_type = 0;
     int is_shooting = 0;
 
-    int offset_x = 100;
+    int offset_x = 600;
     int offset_y = 100;
     int _offset_x = 1;
     int _offset_y = 0;

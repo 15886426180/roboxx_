@@ -191,7 +191,7 @@ void ImageProcess::Find_light()
         float  _h = MAX(box.size.width, box.size.height);
         float  _w = MIN(box.size.width, box.size.height);
         light_h_w = _w / _h;
-        cout <<light_h_w<<endl;
+        // cout <<light_h_w<<endl;
         if (fabs(box.angle) < 40 && light_h_w < 0.6f)
         {
             this->light.push_back(box); //保存灯条
@@ -453,7 +453,7 @@ bool ImageProcess::Light_judge(int i, int j)
                 armor_data.width = Distance(armor_data.left_light.center, armor_data.right_light.center);
                 armor_data.aspect_ratio = armor_data.width/armor_data.height;//保存长宽比
                 // cout<<armor_data.left_light.angle - armor_data.right_light.angle<<endl;
-                if(armor_data.left_light.angle - armor_data.right_light.angle < 8)//两侧灯条角度差
+                if(armor_data.left_light.angle - armor_data.right_light.angle < 5)//两侧灯条角度差
                 {
                     if(armor_data.width*armor_data.height > 500)
                     {
@@ -516,15 +516,14 @@ int ImageProcess::Average_color()
 }
 
 
-void ImageProcess::Roi_Range()
+void ImageProcess::roiRange()
 {
     if (lost_armor_success)
     {
-        int point_x = armor[optimal_armor].armor_rect.center.x - 240 + armor_roi.x;
-        int point_y = armor[optimal_armor].armor_rect.center.y - 150 + armor_roi.y;
-        int width = 480;
-        int height = 300;
-
+        int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2 + armor_roi.x;
+        int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2 + armor_roi.y;
+        int width = armor[optimal_armor].width*4;
+        int height = armor[optimal_armor].height*4;
         if (point_x < 0)
         {
             point_x = 0;
@@ -545,10 +544,10 @@ void ImageProcess::Roi_Range()
         }
         else
         {
-            int point_x = armor[optimal_armor].armor_rect.center.x - 240;
-            int point_y = armor[optimal_armor].armor_rect.center.y - 150;
-            int width = 480;
-            int height = 300;
+            int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2;
+            int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2;
+            int width = armor[optimal_armor].width*4;
+            int height = armor[optimal_armor].height*4;
             if (point_x < 0)
             {
                 point_x = 0;

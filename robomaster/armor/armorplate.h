@@ -49,7 +49,7 @@ public:
     void Armor_screening();//筛选装甲板
     void Free_memory();//释放内存
     int Motion_direction();//判断装甲板运动方向
-    void Roi_Range();//ROI范围
+    void roiRange();//ROI范围
     void Direction_judgment();//方向判断
     
     void Speed_calculation();
