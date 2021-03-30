@@ -284,7 +284,7 @@ void WorKing::Automatic_fire()
     line(frame, Point(CAMERA_RESOLUTION_COLS/2 , 0), Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS), Scalar(0, 255, 255));
     cout<<"yaw = "<<yaw<<endl;
     cout<<"depth = "<<depth<<endl;
-    offset_yaw = 6.5441*exp(-0.001*depth) + 1;
+    offset_yaw = 6.5441*exp(-0.001*depth) + 0.5;
     cout<<"offset_yaw = "<<offset_yaw<<endl;
     if(fabs(yaw) <= offset_yaw)
     {

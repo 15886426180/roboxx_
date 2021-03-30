@@ -12,6 +12,8 @@
         "functional": "cpp",
         "tuple": "cpp",
         "utility": "cpp",
-        "fstream": "cpp"
+        "fstream": "cpp",
+            // Number of seconds the list of `.gitignore` files retrieved from github will be cached
+        "gitignore.cacheExpirationInterval": 3600
     }
 }
