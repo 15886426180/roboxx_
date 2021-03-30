@@ -1,4 +1,3 @@
-*.mvdat
 *.o
 *.config
-
+*.mvdat

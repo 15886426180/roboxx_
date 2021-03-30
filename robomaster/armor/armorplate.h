@@ -90,6 +90,7 @@ public:
     int red_armor_color_th = 100;//192 95 10.50
     Point a, b, c;//预测方向
 
+    int armor_gray_th = 50;
     int h_min = 0;//0 80 116 222 21 95 red
     int h_max = 80;//115 173 136 255 90 255 blue
     int s_min = 136;

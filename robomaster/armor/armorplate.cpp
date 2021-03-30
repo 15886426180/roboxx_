@@ -30,6 +30,12 @@ void ImageProcess::free_Memory()
         }
     }
 }
+/**
+ * @brief hsv预处理 减少光照影响
+ * 
+ * @param src_img 
+ * @param enemy_color 
+ */
 void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
 {
     //保存原图像
@@ -57,25 +63,18 @@ void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
         h_min = 115;
         h_max = 173;
 #endif
-        inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
-        threshold(gray_img, bin_img_gray, this->blue_armor_gray_th, 255, THRESH_BINARY);
     }
     else if (enemy_color == 1)
     {
-        //0 80 116 222 21 95 red
+        //0 80 116 222 90 255 red
 #if IS_PARAM_ADJUSTMENT == 0
         h_min = 0;
         h_max = 80;
 #endif
-        inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
-        threshold(gray_img, bin_img_gray, this->blue_armor_gray_th, 255, THRESH_BINARY);
     }
+    inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
+    threshold(gray_img, bin_img_gray, this->armor_gray_th, 255, THRESH_BINARY);
     Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
-    // Mat element_erode = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
-    // erode(bin_img_color, bin_img_color, element_erode);
-    // dilate(bin_img_gray, bin_img_gray, element);
-    // dilate(bin_img_color, bin_img_color, element);
-    // bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
     dilate(bin_img_color, bin_img_color, element);
 #if SHOW_BIN_IMG == 1    
     imshow("gray_img", bin_img_gray);
@@ -87,7 +86,7 @@ void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
     this->gray_img = bin_img_gray;
 }
 /**
- * @brief 图像预处理
+ * @brief 图像预处理 RGB
  * 
  * @param src_img -传入原图像
  * @param enemy_color -传入敌方颜色
@@ -156,7 +155,7 @@ void ImageProcess::Pretreat_Rgb(Mat src_img, int enemy_color)
 }
 
 /**
- * @brief 寻找灯条
+ * @brief 寻找灯条 通过灯条的长宽、大小和角度 筛选灯条
  * 
  */
 void ImageProcess::find_Light()
@@ -211,7 +210,7 @@ void ImageProcess::find_Light()
     vector<vector<Point>> (contours).swap(contours);
 }
 /**
- * @brief 数据处理
+ * @brief 运行
  * 
  * @return true 正确得到装甲板
  * @return false 无法得到装甲板
@@ -248,33 +247,8 @@ bool ImageProcess::Processing()
     return true;
 }
 
-double cross(Point a, Point b, Point c)
-{
-    return ((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x));
-}
 /**
- * @brief 判断旋转方向
- * 
- */
-void ImageProcess::direction_Judgment()
-{
-    if(num > 0)
-    {
-        amplitude = Distance(lost_armor_center ,armor_center);
-        if(amplitude < 100)
-        {
-            amplitude = lost_armor_center.x - armor_center.x;
-            
-        }
-        else{
-            amplitude = 0;
-        }
-    }
-    num++;
-}
-
-/**
- * @brief 多装甲板筛选
+ * @brief 多装甲板筛选 选择最优装甲板
  * 
  */
 void ImageProcess::armor_Screening()
