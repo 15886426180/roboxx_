@@ -31,8 +31,8 @@ public:
     void get_Angel_Buff(const Mat &pos_in_ptz, float buff_angle);
     float getBuffPitch(float dist, float tvec_y, float ballet_speed);
     //小孔成像
-    float Pinhole_imaging(RotatedRect rects, float _h);
-    Mat camera_ptz(Mat &t);
+    float pinhole_Imaging(RotatedRect rects, float _h);
+    Mat camera_Ptz(Mat &t);
     // void get_Angle(const Mat & pos_in_ptz);
     Point armor_point;
     vector<Point2f> target2d;

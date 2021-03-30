@@ -15,7 +15,7 @@ float Distance(Point a, Point b)
  * @brief 释放内存
  * 
  */
-void ImageProcess::Free_memory()
+void ImageProcess::free_Memory()
 {
     lost_armor_success = armor_success;
     armor_success = false;
@@ -30,14 +30,13 @@ void ImageProcess::Free_memory()
         }
     }
 }
-void ImageProcess::Pretreat_hsv(Mat src_img, int enemy_color)
+void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
 {
     //保存原图像
     this->frame = src_img;
     // imshow(" ", frame);
     //转灰度图
     Mat gray_img, hsv_img;
-
     Mat bin_img_color, bin_img_gray;
     cvtColor(this->frame, gray_img, COLOR_BGR2GRAY);
     cvtColor(this->frame, hsv_img, COLOR_BGR2HSV_FULL);
@@ -93,7 +92,7 @@ void ImageProcess::Pretreat_hsv(Mat src_img, int enemy_color)
  * @param src_img -传入原图像
  * @param enemy_color -传入敌方颜色
  */
-void ImageProcess::Pretreat(Mat src_img, int enemy_color)
+void ImageProcess::Pretreat_Rgb(Mat src_img, int enemy_color)
 {
     //保存原图像
     this->frame = src_img;
@@ -160,7 +159,7 @@ void ImageProcess::Pretreat(Mat src_img, int enemy_color)
  * @brief 寻找灯条
  * 
  */
-void ImageProcess::Find_light()
+void ImageProcess::find_Light()
 {
     RotatedRect box;
     /*轮廓周长*/
@@ -224,7 +223,7 @@ bool ImageProcess::Processing()
     draw_img = Mat::zeros(frame.size(), CV_8UC3);
     light_count = 0;
     //寻找灯条
-    Find_light();
+    find_Light();
     
     //灯条少于2 停止运行
     if(this->light_count < 2)
@@ -233,7 +232,7 @@ bool ImageProcess::Processing()
     }
     
     //灯条拟合装甲板
-    Fitting_armor();
+    fitting_Armor();
     
     //无装甲
     if(armor_count < 1)
@@ -244,8 +243,8 @@ bool ImageProcess::Processing()
     armor_success = true;
 
     //多装甲板筛选
-    Armor_screening();
-    Direction_judgment();
+    armor_Screening();
+    direction_Judgment();
     return true;
 }
 
@@ -257,7 +256,7 @@ double cross(Point a, Point b, Point c)
  * @brief 判断旋转方向
  * 
  */
-void ImageProcess::Direction_judgment()
+void ImageProcess::direction_Judgment()
 {
     if(num > 0)
     {
@@ -278,7 +277,7 @@ void ImageProcess::Direction_judgment()
  * @brief 多装甲板筛选
  * 
  */
-void ImageProcess::Armor_screening()
+void ImageProcess::armor_Screening()
 {
     if(armor_count < 2)
     {
@@ -378,7 +377,7 @@ void ImageProcess::Armor_screening()
  * @brief 拟合装甲板
  * 
  */
-void ImageProcess::Fitting_armor()
+void ImageProcess::fitting_Armor()
 {
      //遍历灯条
     for (size_t i = 0; i < this->light.size(); i++)
@@ -408,9 +407,9 @@ void ImageProcess::Fitting_armor()
             if (error_angle < 5.0f)
             {
                 armor_data.tan_angle = atan(error_angle) * 180 / CV_PI;
-                if (this->Light_judge(light_left, light_right))
+                if (this->light_Judge(light_left, light_right))
                 {   
-                    if (this->Average_color() < 20)
+                    if (this->average_Color() < 20)
                     {
                         armor_count++;
                         armor.push_back(armor_data);
@@ -429,7 +428,7 @@ void ImageProcess::Fitting_armor()
  * @return true 找到了符合装甲板条件的位置
  * @return false 没找到了符合装甲板条件的位置
  */
-bool ImageProcess::Light_judge(int i, int j)
+bool ImageProcess::light_Judge(int i, int j)
 {
     armor_data.left_light_height = MAX(light[i].size.height, light[i].size.width);
     armor_data.left_light_width = MIN(light[i].size.height, light[i].size.width);
@@ -440,7 +439,7 @@ bool ImageProcess::Light_judge(int i, int j)
     armor_data.left_right_h = armor_data.left_light_height / armor_data.right_light_height;
     armor_data.left_right_w = armor_data.left_light_width / armor_data.right_light_width;
     if (armor_data.left_right_h < 1.5 
-            && armor_data.left_right_w > 0.2 
+            && armor_data.left_right_w > 0.2
             && armor_data.left_right_h > 0.7
             && armor_data.left_right_w < 2)
     {
@@ -485,7 +484,7 @@ bool ImageProcess::Light_judge(int i, int j)
  * @param roi 传入需要计算的图像
  * @return int 返回平均强度
  */
-int ImageProcess::Average_color()
+int ImageProcess::average_Color()
 {   
     RotatedRect rects = RotatedRect((armor_data.left_light.center + armor_data.right_light.center)/2,
         Size(armor_data.width - (armor_data.left_light_width + armor_data.right_light_width)/2, 
@@ -509,14 +508,14 @@ int ImageProcess::Average_color()
     {
         _rect.width = gray_img.cols - _rect.x;
     }
-    Mat roi = gray_img(_rect);;
+    Mat roi = gray_img(_rect);
     int average_intensity = static_cast<int>(mean(roi).val[0]);
     // cout<<"average_intensity = "<<average_intensity<<endl;
     return average_intensity;
 }
 
 
-void ImageProcess::roiRange()
+void ImageProcess::roi_Range()
 {
     if (lost_armor_success)
     {

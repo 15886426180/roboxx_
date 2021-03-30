@@ -92,7 +92,7 @@
  * @param 0 蓝色
  */
 
-#define IS_PARAM_ADJUSTMENT 1
+#define IS_PARAM_ADJUSTMENT 0
 /**
   @brief 是否进入调参模式
   @param 0     否

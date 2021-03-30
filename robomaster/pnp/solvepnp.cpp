@@ -47,7 +47,7 @@ void SolveP4p::run_SolvePnp(float _W, float _H)
     
     solvePnP(object_3d, target2d, cameraMatrix, distCoeffs, rvec, tvec, false, SOLVEPNP_ITERATIVE);
 
-    Mat ptz = camera_ptz(tvec); //云台Pitch轴当前角度
+    Mat ptz = camera_Ptz(tvec); //云台Pitch轴当前角度
     get_Angle(ptz);
     rvec.release();
     tvec.release();
@@ -59,7 +59,7 @@ void SolveP4p::run_SolvePnp(float _W, float _H)
  * @param t 传入平移向量
  * @return Mat 返回世界坐标系
  */
-Mat SolveP4p::camera_ptz(Mat &t)
+Mat SolveP4p::camera_Ptz(Mat &t)
 {
     //设相机坐标系绕X轴你是逆时针旋转θ后与云台坐标系的各个轴向平行
     // double theta = 0; /*-atan(static_cast<double>(ptz_camera_y + barrel_ptz_offset_y))/static_cast<double>(overlap_dist);*/
@@ -89,7 +89,7 @@ void SolveP4p::run_SolvePnp_Buff(Mat &srcImg, float buff_angle, float _W, float 
 
     // draw_Coordinate(srcImg);
 
-    Mat ptz = camera_ptz(tvec); //云台Pitch轴当前角度
+    Mat ptz = camera_Ptz(tvec); //云台Pitch轴当前角度
     //cout << ptz << "-----" << rect.center << endl;
 
     get_Angel_Buff(ptz, buff_angle); //输入云台Pitch轴当前角度,目标矩形位置

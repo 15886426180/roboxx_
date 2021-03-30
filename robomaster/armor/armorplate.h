@@ -40,20 +40,20 @@ struct Armor_data
 class ImageProcess
 {
 public:
-    void Pretreat(Mat frame, int enemy_color);
+    void Pretreat_Rgb(Mat frame, int enemy_color);
     bool Processing();
-    bool Light_judge(int i, int j);//判断左右灯条能否组成装甲板
-    int Average_color();//计算图像颜色平均值
-    void Fitting_armor();//拟合装甲板
-    void Find_light();//寻找灯条
-    void Armor_screening();//筛选装甲板
-    void Free_memory();//释放内存
-    int Motion_direction();//判断装甲板运动方向
-    void roiRange();//ROI范围
-    void Direction_judgment();//方向判断
+    bool light_Judge(int i, int j);//判断左右灯条能否组成装甲板
+    int average_Color();//计算图像颜色平均值
+    void fitting_Armor();//拟合装甲板
+    void find_Light();//寻找灯条
+    void armor_Screening();//筛选装甲板
+    void free_Memory();//释放内存
+    int motion_Direction();//判断装甲板运动方向
+    void roi_Range();//ROI范围
+    void direction_Judgment();//方向判断
     
-    void Speed_calculation();
-    void Pretreat_hsv(Mat src_img, int enemy_color);//hsv预处理
+    void speed_Calculation();//自动开火
+    void pretreat_Hsv(Mat src_img, int enemy_color);//hsv预处理
     ImageProcess() {}
     ~ImageProcess() {}
     

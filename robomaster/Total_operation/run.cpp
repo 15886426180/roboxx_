@@ -57,12 +57,12 @@ void WorKing::Run()
     src_img = frame;
 #endif
         pattern = 0;
-        enemy_color = 1;
+        enemy_color = 0;
         switch (this->pattern)
         {
         case 0://自瞄
             // img.Pretreat(src_img, enemy_color);
-            img.Pretreat_hsv(src_img, enemy_color);
+            img.pretreat_Hsv(src_img, enemy_color);
             data_success = img.Processing();
             if(data_success)
             {
@@ -134,7 +134,7 @@ void WorKing::Run()
 #endif
             //ROI范围
 #if ROI_IMG == 1
-            img.roiRange();
+            img.roi_Range();
 #endif
         }
         else//丢失清零
@@ -147,7 +147,7 @@ void WorKing::Run()
         }
 
         //释放内存
-        img.Free_memory();
+        img.free_Memory();
 //串口传输
 #if CALL_SERIALPORT == 1
         serial.RMserialWrite(_yaw, fabs(yaw)*100, _pitch, fabs(pitch)*100, depth, data_type, is_shooting);

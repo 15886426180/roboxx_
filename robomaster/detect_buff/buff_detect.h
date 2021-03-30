@@ -13,15 +13,15 @@ public:
         RotatedRect rect;
     };
     //预处理
-    void pretreat(Mat frame, int enemy_color);
+    void pretreatRgb(Mat frame, int enemy_color);
     //找大神符中心的R
-    bool Looking_for_center();
+    bool lookingCenter();
     //寻找目标
-    int Looking_for_target();
+    int lookingTarget();
     //计算坐标
-    void Calculating_coordinates(int i);
-    int average_color(Mat roi);
-    Mat max_buff_roi(int i);
+    void calculatingCoordinates(int i);
+    int average_Color(Mat roi);
+    Mat maxbuffRoi(int i);
     float Distance(Point a, Point b)
     {
         return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
@@ -30,7 +30,7 @@ public:
     {
         return ((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x));
     }
-    int Getstate();
+    int getState();
 
     vector<buff_target> buff;
     vector<Point> armor_center;
