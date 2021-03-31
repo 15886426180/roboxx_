@@ -324,6 +324,7 @@ void ImageProcess::armor_Screening()
             if(armor[i].priority > max_priority)
             {
                 optimal_armor = i;
+                max_priority = armor[i].priority;
             }
             else if(armor[i].priority == max_priority)//优先级相同比较高度
             {
