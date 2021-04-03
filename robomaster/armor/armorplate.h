@@ -50,7 +50,7 @@ public:
     void free_Memory();//释放内存
     int motion_Direction();//判断装甲板运动方向
     void roi_Range();//ROI范围
-    void direction_Judgment();//方向判断
+    // void direction_Judgment();//方向判断
     
     void speed_Calculation();//自动开火
     void pretreat_Hsv(Mat src_img, int enemy_color);//hsv预处理
@@ -93,9 +93,9 @@ public:
     int armor_gray_th = 50;
     int h_min = 0;//0 80 116 222 21 95 red
     int h_max = 80;//115 173 136 255 90 255 blue
-    int s_min = 136;
+    int s_min = 130;
     int s_max = 255;
-    int v_min = 140;
+    int v_min = 130;
     int v_max = 255;
 };
 

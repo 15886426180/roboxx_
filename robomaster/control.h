@@ -160,7 +160,7 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/xx/roboxx_github/roboxx_/robomaster/camera.xml"
+#define CAMERA_PARAM_FILE "/home/gcurobot/xx_github/roboxx_/roboxx_/robomaster/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置

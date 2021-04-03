@@ -243,7 +243,7 @@ bool ImageProcess::Processing()
 
     //多装甲板筛选
     armor_Screening();
-    direction_Judgment();
+    // direction_Judgment();
     return true;
 }
 
@@ -259,7 +259,7 @@ void ImageProcess::armor_Screening()
     }
     else
     {
-        int max_priority = 0;
+        int max_priority = 3;
         for (int i = 0; i < armor_count; i ++)
         {
             
@@ -324,18 +324,33 @@ void ImageProcess::armor_Screening()
             if(armor[i].priority > max_priority)
             {
                 optimal_armor = i;
-                max_priority = armor[i].priority;
+                // max_priority = armor[i].priority;
             }
             else if(armor[i].priority == max_priority)//优先级相同比较高度
             {
-                if(fabs(armor[i].height) > fabs(armor[optimal_armor].height))
+                int temp_dist = Distance(armor[i].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
+                int temp_depth = Distance(armor[optimal_armor].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
+                if(temp_dist < temp_depth)
                 {
                     optimal_armor = i;
                 }
-                if(armor[i].tan_angle < armor[optimal_armor].tan_angle)
-                {
-                    optimal_armor = i;
+                else{
+                    if(fabs(armor[i].height) >= fabs(armor[optimal_armor].height))
+                    {
+                        optimal_armor = i;
+                    }
+                    else{
+                        if(armor[i].tan_angle <= armor[optimal_armor].tan_angle)
+                        {
+                            optimal_armor = i;
+                        }
+                    }
                 }
+                
+                // if()
+                // {
+
+                // }
             }
         }
     }
@@ -413,16 +428,16 @@ bool ImageProcess::light_Judge(int i, int j)
     armor_data.max_light_h = MAX(armor_data.right_light_height, armor_data.left_light_height);
     armor_data.left_right_h = armor_data.left_light_height / armor_data.right_light_height;
     armor_data.left_right_w = armor_data.left_light_width / armor_data.right_light_width;
-    if (armor_data.left_right_h < 1.5 
+    if (armor_data.left_right_h < 2
             && armor_data.left_right_w > 0.2
-            && armor_data.left_right_h > 0.7
-            && armor_data.left_right_w < 2)
+            && armor_data.left_right_h > 0.5
+            && armor_data.left_right_w < 5)
     {
         armor_data.height = (armor_data.right_light_height + armor_data.left_light_height) / 2.0f;
         // 两个灯条高度差不大
-        if (fabs(armor_data.left_light.center.y - armor_data.right_light.center.y) < armor_data.height / 2)
+        if (fabs(armor_data.left_light.center.y - armor_data.right_light.center.y) < armor_data.height)
         {
-            if(fabs(armor_data.left_light_height  - armor_data.right_light_height) < armor_data.height / 4)
+            if(fabs(armor_data.left_light_height  - armor_data.right_light_height) < armor_data.height/4)
             {
                 armor_data.width = Distance(armor_data.left_light.center, armor_data.right_light.center);
                 armor_data.aspect_ratio = armor_data.width/armor_data.height;//保存长宽比

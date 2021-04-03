@@ -57,7 +57,7 @@ void WorKing::Run()
     src_img = frame;
 #endif
         pattern = 0;
-        enemy_color = 0;
+        enemy_color = 1;
         switch (this->pattern)
         {
         case 0://自瞄
