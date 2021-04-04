@@ -350,9 +350,17 @@ void SolveP4p::get_Angle(const Mat &pos_in_ptz)
     {
         angle_x = static_cast<float>(atan2(xyz[0], xyz[2]));
     }
-    angle_x = static_cast<float>(angle_x) * 180 / CV_PI;
-    angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
+    float target_h = ARMOR_BOTTOM_H - ROBOT_H;
+    float thta = -static_cast<float>(atan2(xyz[1], xyz[2]));          // 云台与目标点的相对角度
+    float balta = static_cast<float>(atan2(target_h, xyz[2])) - thta; // 云台与地面的相对角度
     dist = static_cast<float>(xyz[2]);
+    angle_y = -getBuffPitch(dist / 1000, (target_h) / 1000, BULLET_SPEED);
+    /*------------------------------------北理珠---------------------------------------------------*/
+    angle_y += balta;
+    angle_x = static_cast<float>(angle_x) * 180 / CV_PI;
+    // angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
+    angle_y = static_cast<float>(atan2(xyz[1], xyz[2]));
+    angle_y = angle_y * 180 / CV_PI;
 #if SHOW_ANGLE_INFORMATION == 1
     cout << "angle_x:" << angle_x << "     angle_y:" << angle_y << "    dist:" << dist << endl;
 #endif

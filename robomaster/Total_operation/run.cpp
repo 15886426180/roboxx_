@@ -34,7 +34,7 @@ void WorKing::Run()
             capture >> frame;
         }
 
-        // 
+        
         Mode_Selection();
 
 #if ISOPEN_INDUSTRY_CAPTURE == 1
@@ -72,17 +72,6 @@ void WorKing::Run()
                 {
                     roi_tl = img.armor_roi.tl();
                 }
-                // if(img.amplitude!=0)
-                // {
-                //   if(img.amplitude > 0)
-                //   {
-                //     offset_x = 0;
-                //   }
-                //   else{
-                //     offset_x = 200;
-                //   }
-                // }
-                // cout<<offset_x<<endl;
 #if CALL_KALMAN == 1
             data_type = 1;
             Point kalman_point = kalman.predict_point(t,img.armor[img.optimal_armor].armor_rect.center + roi_tl);
@@ -107,11 +96,6 @@ void WorKing::Run()
                 img.armor[img.optimal_armor].tan_angle);
             pnp.vertex_Sort(box);
             rectangle(frame, box.boundingRect(), Scalar(0, 255, 0), 3, 8);
-            // RotatedRect kalman_box = RotatedRect(kalman_point, 
-            //   Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].height), 
-            //   img.armor[img.optimal_armor].tan_angle);
-            // rectangle(frame, kalman_box.boundingRect(), Scalar(0, 255, 0), 3, 8);
-            // pnp.vertex_Sort(kalman_box);
             
             //pnp角度结算
             if(img.armor[img.optimal_armor].distinguish == 0)

@@ -190,11 +190,13 @@
 #define DEAD_BAND 0
 #define SIZE_X 960
 #define SIZE_Y 480
+#define ARMOR_BOTTOM_H 190
+
 
 //buff-model尺寸(solve_pnp.cpp)
-#define BULLET_SPEED 29             //子弹射速
+#define BULLET_SPEED 18             //子弹射速
 #define BUFF_BOTTOM_H -100          //buff最底装甲板距离地面高度 728.84
-#define ROBOT_H 330                 //枪口高度    现在是330~340 也有可能是摄像头高度，待测
+#define ROBOT_H 338                 //枪口高度    现在是330~340 也有可能是摄像头高度，待测
 #define BUFF_ROBOT_Z 6915.340249311 //枪口和buff的直线距离    6915.340249311 6817.708 7212.708
 #define OFFSET_Y_BARREL_PTZ 0       //枪管和云台的高度差
 
