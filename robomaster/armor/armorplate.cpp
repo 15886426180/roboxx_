@@ -16,7 +16,7 @@ float Distance(Point a, Point b)
  * 
  */
 void ImageProcess::free_Memory()
-{
+{   
     lost_armor_success = armor_success;
     armor_success = false;
     if(light_count > 0)
@@ -311,6 +311,7 @@ void ImageProcess::armor_Screening()
             {
                 armor[i].priority +=1;
             }
+
             if(armor[i].left_right_w < 1.2 || armor[i].left_right_w > 0.8)
             {
                 armor[i].priority +=1; 
@@ -320,7 +321,8 @@ void ImageProcess::armor_Screening()
             {
                 armor[i].priority += 1;
             }
-
+            
+            
             if(armor[i].priority > max_priority)
             {
                 optimal_armor = i;
@@ -454,7 +456,7 @@ bool ImageProcess::light_Judge(int i, int j)
                             return true;
                         }
                         
-                        if (armor_data.aspect_ratio > 2.55f && armor_data.aspect_ratio < 4.1f)
+                        if (armor_data.aspect_ratio > 2.55f && armor_data.aspect_ratio < 4.6f)
                         {
                             armor_data.distinguish = 1;//大装甲板
                             return true;
@@ -509,6 +511,7 @@ void ImageProcess::roi_Range()
 {
     if (lost_armor_success)
     {
+        Point lost_armor = armor_roi.tl();
         int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2 + armor_roi.x;
         int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2 + armor_roi.y;
         int width = armor[optimal_armor].width*4;
@@ -520,39 +523,54 @@ void ImageProcess::roi_Range()
         if (point_y < 0)
         {
             point_y = 0;
-            }
-            if (point_x + width >= CAMERA_RESOLUTION_COLS)
-            {
-            width = CAMERA_RESOLUTION_COLS - abs(point_x);
-            }
-            if (point_y + height >= CAMERA_RESOLUTION_ROWS)
-            {
-            height = CAMERA_RESOLUTION_ROWS - abs(point_y);
-            }
-            armor_roi = Rect(point_x, point_y, width, height);
         }
-        else
+        if (point_x + width >= CAMERA_RESOLUTION_COLS)
         {
-            int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2;
-            int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2;
-            int width = armor[optimal_armor].width*4;
-            int height = armor[optimal_armor].height*4;
-            if (point_x < 0)
-            {
-                point_x = 0;
-            }
-            if (point_y < 0)
-            {
-                point_y = 0;
-            }
-            if (point_x + width >= CAMERA_RESOLUTION_COLS)
-            {
-                width = CAMERA_RESOLUTION_COLS - point_x;
-            }
-            if (point_y + height >= CAMERA_RESOLUTION_ROWS)
-            {
-                height = CAMERA_RESOLUTION_ROWS - point_y;
-            }
-            armor_roi = Rect(point_x, point_y, width, height);
-        }     
+            width = CAMERA_RESOLUTION_COLS - abs(point_x);
+        }
+        if (point_y + height >= CAMERA_RESOLUTION_ROWS)
+        {
+            height = CAMERA_RESOLUTION_ROWS - abs(point_y);
+        }
+        armor_roi = Rect(point_x, point_y, width, height);
+        roi_num++;
+        // //切换装甲板roi归零
+        // if(Distance(lost_armor, armor_roi.tl()) > CAMERA_RESOLUTION_COLS/2)
+        // {
+        //     switch_armor = true;
+        //     roi_num = 0;
+        // }
+        lose_roi_num = 0;
+    }
+    else
+    {
+        int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2;
+        int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2;
+        int width = armor[optimal_armor].width*4;
+        int height = armor[optimal_armor].height*4;
+        if (point_x < 0)
+        {
+            point_x = 0;
+        }
+        if (point_y < 0)
+        {
+            point_y = 0;
+        }
+        if (point_x + width >= CAMERA_RESOLUTION_COLS)
+        {
+            width = CAMERA_RESOLUTION_COLS - point_x;
+        }
+        if (point_y + height >= CAMERA_RESOLUTION_ROWS)
+        {
+            height = CAMERA_RESOLUTION_ROWS - point_y;
+        }
+        armor_roi = Rect(point_x, point_y, width, height);
+        lose_roi_num++;
+        if(roi_temp > 5)
+        {
+            roi_temp = 0;
+        }
+        roi_num_law[roi_temp] = roi_num;
+        roi_temp++;
+    }     
 }

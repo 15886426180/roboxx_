@@ -32,7 +32,7 @@
  * @param: 1 调用
  * @param: 0 不调用
  */
-#define SHOW_ANGLE_INFORMATION 0
+#define SHOW_ANGLE_INFORMATION 1
 /**
   @brief: 是否打印PNP解算角度信息
   @param: 0     不打印
@@ -78,7 +78,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 1
+#define SHOW_BIN_IMG 0
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -137,9 +137,9 @@
  * @brief 灯条实际宽度(mm)
  * 
  */
-#define CAMERA_EXPOSURETIME 400
-#define CAMERA_RESOLUTION_COLS 960 
-#define CAMERA_RESOLUTION_ROWS 800
+#define CAMERA_EXPOSURETIME 800
+#define CAMERA_RESOLUTION_COLS 960 //16
+#define CAMERA_RESOLUTION_ROWS 600 // 2
 #define CAMERA_RESOLUTION_COLS_FOV ((1280 - CAMERA_RESOLUTION_COLS) * 0.5)
 #define CAMERA_RESOLUTION_ROWS_FOV ((1024 - CAMERA_RESOLUTION_ROWS) * 0.5)
 #define CAMERA_RED_GAIN 100
@@ -160,7 +160,7 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/gcurobot/xx_github/roboxx_/roboxx_/robomaster/camera.xml"
+#define CAMERA_PARAM_FILE "/home/xx/roboxx_github/roboxx_/robomaster/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置

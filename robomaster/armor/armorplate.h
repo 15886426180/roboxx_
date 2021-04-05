@@ -74,7 +74,7 @@ public:
     
     bool lost_armor_success = false;
     bool armor_success = false;
-
+    bool switch_armor = false;//切换装甲板
     int amplitude = 0;//幅度
     int armor_count = 0;//装甲板计数
     int light_count = 0;//灯条计数
@@ -88,8 +88,12 @@ public:
     //红色th参数
     int red_armor_gray_th = 142; //60 45
     int red_armor_color_th = 100;//192 95 10.50
-    Point a, b, c;//预测方向
+    // Point lost_armor_center;//上一帧装甲板位置
 
+    int roi_num = 0;//roi计数
+    int lose_roi_num = 0;//roi丢失计数
+    int roi_temp = 0;
+    int roi_num_law[5] = {0};//roi规律
     int armor_gray_th = 50;
     int h_min = 0;//0 80 116 222 21 95 red
     int h_max = 80;//115 173 136 255 90 255 blue

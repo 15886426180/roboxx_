@@ -35,6 +35,7 @@ public:
     int enemy_color = 1;//敌方颜色
     int pattern = 0;//模式选择
     int firing = 0;
+    int fire_num = 0;//开火计数
     bool data_success = false;
     int _yaw = 0;
     float yaw = 0;
@@ -44,7 +45,7 @@ public:
     int data_type = 0;
     int is_shooting = 0;
 
-    int offset_x = 600;
+    int offset_x = 670;
     int offset_y = 100;
     int _offset_x = 1;
     int _offset_y = 0;
