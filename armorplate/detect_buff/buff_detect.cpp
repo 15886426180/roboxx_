@@ -6,7 +6,7 @@
  * @param frame -传入原图像
  * @param enemy_color -传入敌方颜色
  */
-void Max_Buff::pretreat(Mat frame, int enemy_color)
+void Max_Buff::pretreatRgb(Mat frame, int enemy_color)
 {
     //保存原图像
     this->src_img = frame;
@@ -69,7 +69,7 @@ void Max_Buff::pretreat(Mat frame, int enemy_color)
  * @return true 
  * @return false 
  */
-bool Max_Buff::Looking_for_center()
+bool Max_Buff::lookingCenter()
 {
     findContours(this->mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_NONE);
     RotatedRect box;
@@ -92,7 +92,7 @@ bool Max_Buff::Looking_for_center()
     return central_success;
 }
 
-int Max_Buff::Looking_for_target()
+int Max_Buff::lookingTarget()
 {
     RotatedRect box;
     int num = 0;
@@ -118,9 +118,9 @@ int Max_Buff::Looking_for_target()
                 line(src_img, vertex[i], vertex[(i + 1) % 4], Scalar(255, 100, 200), 5, CV_AA);
             }
             max_buff_rects.push_back(box); //保存外接矩形
-            Mat src = max_buff_roi(num);
+            Mat src = maxbuffRoi(num);
             // imshow("s", src);
-            if (average_color(src) < 70 && central_success) //20红色 50蓝色
+            if (average_Color(src) < 70 && central_success) //20红色 50蓝色
             {
                 hit_subscript = num;
                 input++;
@@ -134,7 +134,7 @@ int Max_Buff::Looking_for_target()
     if (find_cnt_ % 2 == 0)
     { //隔帧读数据
         buff_angle_ = max_buff_rects[hit_subscript].angle;
-        direction_tmp_ = Getstate(); //判断旋转方向 1顺时针,-1逆时针
+        direction_tmp_ = getState(); //判断旋转方向 1顺时针,-1逆时针
         if (find_cnt_ == 10)
             find_cnt_ = 0;
     }
@@ -149,7 +149,7 @@ int Max_Buff::Looking_for_target()
     return max_buff_rects.size();
 }
 
-Mat Max_Buff::max_buff_roi(int i)
+Mat Max_Buff::maxbuffRoi(int i)
 {
     int _w = MAX(max_buff_rects[i].size.width, max_buff_rects[i].size.height);
     Point center = Point((max_buff_rects[i].center.x + central_point.x) / 2, (max_buff_rects[i].center.y + central_point.y) / 2);
@@ -187,7 +187,7 @@ Mat Max_Buff::max_buff_roi(int i)
  * @param roi 传入需要计算的图像
  * @return int 返回平均强度
  */
-int Max_Buff::average_color(Mat roi)
+int Max_Buff::average_Color(Mat roi)
 {
     int average_intensity = static_cast<int>(mean(roi).val[0]);
     cout << average_intensity << endl;
@@ -198,7 +198,7 @@ int Max_Buff::average_color(Mat roi)
  * @brief 计算其他击打位置坐标（参数方程计算有问题）
  * 
  */
-void Max_Buff::Calculating_coordinates(int i)
+void Max_Buff::calculatingCoordinates(int i)
 {
     radius = sqrt((central_point.x - max_buff_rects[i].center.x) * (central_point.x - max_buff_rects[i].center.x) + (central_point.y - max_buff_rects[i].center.y) * (central_point.y - max_buff_rects[i].center.y));
     
@@ -262,7 +262,7 @@ void Max_Buff::Calculating_coordinates(int i)
     circle(src_img, pre_center, 10, Scalar(0, 0, 255), -1);
 }
 
-int Max_Buff::Getstate()
+int Max_Buff::getState()
 {
     diff_angle_ = buff_angle_ - last_angle;
     last_angle = buff_angle_;

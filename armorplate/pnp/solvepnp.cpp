@@ -44,11 +44,10 @@ void SolveP4p::run_SolvePnp(float _W, float _H)
     object_3d.push_back(Point3f(half_x, -half_y, 0));
     object_3d.push_back(Point3f(half_x, half_y, 0));
     object_3d.push_back(Point3f(-half_x, half_y, 0));
-    // cout<<target2d.size()<<endl;
-    // cout<<object_3d.size()<<endl;
+    
     solvePnP(object_3d, target2d, cameraMatrix, distCoeffs, rvec, tvec, false, SOLVEPNP_ITERATIVE);
 
-    Mat ptz = camera_ptz(tvec); //云台Pitch轴当前角度
+    Mat ptz = camera_Ptz(tvec); //云台Pitch轴当前角度
     get_Angle(ptz);
     rvec.release();
     tvec.release();
@@ -60,7 +59,7 @@ void SolveP4p::run_SolvePnp(float _W, float _H)
  * @param t 传入平移向量
  * @return Mat 返回世界坐标系
  */
-Mat SolveP4p::camera_ptz(Mat &t)
+Mat SolveP4p::camera_Ptz(Mat &t)
 {
     //设相机坐标系绕X轴你是逆时针旋转θ后与云台坐标系的各个轴向平行
     // double theta = 0; /*-atan(static_cast<double>(ptz_camera_y + barrel_ptz_offset_y))/static_cast<double>(overlap_dist);*/
@@ -90,7 +89,7 @@ void SolveP4p::run_SolvePnp_Buff(Mat &srcImg, float buff_angle, float _W, float 
 
     // draw_Coordinate(srcImg);
 
-    Mat ptz = camera_ptz(tvec); //云台Pitch轴当前角度
+    Mat ptz = camera_Ptz(tvec); //云台Pitch轴当前角度
     //cout << ptz << "-----" << rect.center << endl;
 
     get_Angel_Buff(ptz, buff_angle); //输入云台Pitch轴当前角度,目标矩形位置
@@ -351,9 +350,17 @@ void SolveP4p::get_Angle(const Mat &pos_in_ptz)
     {
         angle_x = static_cast<float>(atan2(xyz[0], xyz[2]));
     }
-    angle_x = static_cast<float>(angle_x) * 180 / CV_PI;
-    angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
+    float target_h = ARMOR_BOTTOM_H - ROBOT_H;
+    float thta = -static_cast<float>(atan2(xyz[1], xyz[2]));          // 云台与目标点的相对角度
+    float balta = static_cast<float>(atan2(target_h, xyz[2])) - thta; // 云台与地面的相对角度
     dist = static_cast<float>(xyz[2]);
+    angle_y = -getBuffPitch(dist / 1000, (target_h) / 1000, BULLET_SPEED);
+    /*------------------------------------北理珠---------------------------------------------------*/
+    angle_y += balta;
+    angle_x = static_cast<float>(angle_x) * 180 / CV_PI;
+    // angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
+    angle_y = static_cast<float>(atan2(xyz[1], xyz[2]));
+    angle_y = angle_y * 180 / CV_PI;
 #if SHOW_ANGLE_INFORMATION == 1
     cout << "angle_x:" << angle_x << "     angle_y:" << angle_y << "    dist:" << dist << endl;
 #endif

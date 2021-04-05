@@ -4,71 +4,33 @@
 using namespace cv;
 using namespace std;
 
-/**
- * @brief 装甲板识别模块的起点
- * 
- */
-class ArmorPlate
+struct Armor_data
 {
-public:
-    // Mat draw_img = Mat::zeros(Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS), CV_8UC3);
-    int rect_num = 0;
-    int lost = 0; //丢失帧数
-    int _yaw = 0;
-    float yaw = 0;
-    float pitch = 0;
-    int _pitch = 0;
-    int depth = 0;
-    int data_type = 0;
-    int is_shooting = 0;
-
-    //弹道补偿
-    int offset_x = 0;  //小：153
-    int offset_y = 0;     //小： 30
-    int _offset_x = 1;    //正1 负0 小：0
-    int _offset_y = 0;    //正1 负0 小：1
-    int offset_ratio = 0; //0~5° 精度0.1 1.5感觉最好
-    Rect armor_roi;
-    bool lost_success_armor = false; //上一帧是否找到装甲板
-    bool success_armor = false;      //这一帧是否找到装甲板
-    /*change place */
-    int char_armor = 0; //判断打击装甲板的种类
-    /*********/
-    void eliminate();
-    void run();
-    ArmorPlate() {}
-    ~ArmorPlate() {}
-};
-
-/**
- * @brief 识别灯条
- * 
- */
-class LightBar : public ArmorPlate
-{
-public:
-    vector<RotatedRect> light;       //储存灯条的旋转矩形
-    vector<RotatedRect> armor;       //储存装甲板的旋转矩形
-    RotatedRect roi_rect;            //下次图像ROI位置
-    vector<int> light_subscript;     //灯条下标
-    vector<bool> priority;           //优先级
+    RotatedRect armor_rect;///
+    float width = 0; ///装甲板宽度
+    float height = 0; ///装甲板高度
+    float aspect_ratio = 0; ///装甲板宽高比
+    float tan_angle = 0;///
+    RotatedRect left_light;///
+    RotatedRect right_light;///
     
-    float light_aspect_ratio = 0.8f; //灯条长宽比
-    float light_angle = 40.0;        //灯条角度
-    RotatedRect lost_armor;          //上一帧装甲板位置
-    bool armor_fitting(Mat src_img);
-    bool light_judge(int i, int j);
-    bool find_light(Mat mask);
-    int average_color(Mat roi);
-    void eliminate();
-    int optimal_armor();
-    int light_is_one();
-    int img_cols;
-    int img_rows;
-    Mat armor_rect(int i, int j, Mat src_img, float angle);
-    void coordinate_change(int i);
-    LightBar() {}
-    ~LightBar() {}
+    float left_light_width = 0; ///左灯条宽度
+    float right_light_width = 0; ///右灯条高度
+
+    float left_light_height = 0; ///左灯条高度
+    float right_light_height = 0; ///右灯条高度
+    
+    float left_right_h = 0;///左灯条高和右灯条高比值
+    float left_right_w = 0;///左灯条宽和右灯条宽比值
+    
+    float min_light_h = 0;//最小灯条高度
+    float max_light_h = 0;//最大灯条高度
+    int depth = 0; //装甲板深度
+    
+    int priority = 0;//优先级 多装甲板情况
+
+    int distinguish = 0;///大小装甲板 小0 大1
+    int position = 0;//装甲板在车的左(-1)右(1)位置
 };
 
 /**
@@ -78,16 +40,67 @@ public:
 class ImageProcess
 {
 public:
-    void pretreat(Mat frame, int enemy_color);
+    void Pretreat_Rgb(Mat frame, int enemy_color);
+    bool Processing();
+    bool light_Judge(int i, int j);//判断左右灯条能否组成装甲板
+    int average_Color();//计算图像颜色平均值
+    void fitting_Armor();//拟合装甲板
+    void find_Light();//寻找灯条
+    void armor_Screening();//筛选装甲板
+    void free_Memory();//释放内存
+    int motion_Direction();//判断装甲板运动方向
+    void roi_Range();//ROI范围
+    // void direction_Judgment();//方向判断
+    
+    void speed_Calculation();//自动开火
+    void pretreat_Hsv(Mat src_img, int enemy_color);//hsv预处理
     ImageProcess() {}
     ~ImageProcess() {}
-    Mat frame;
-    Mat mask;
-    Mat gray_img;
+    
+    Mat frame;//原图
+    Mat mask;//二值化
+    Mat gray_img;//灰度图
+    Mat draw_img;//画板 
+    
+    Armor_data armor_data;
+    
+    vector<Armor_data> armor;
+    vector<RotatedRect> light;
+
+    Rect armor_roi;
+
+    Point lost_armor_center;
+    Point armor_center;//装甲板中心点
+    
+    bool lost_armor_success = false;
+    bool armor_success = false;
+    bool switch_armor = false;//切换装甲板
+    int amplitude = 0;//幅度
+    int armor_count = 0;//装甲板计数
+    int light_count = 0;//灯条计数
+    int optimal_armor = 0;//最优装甲板
+    int armor_position = 0;//装甲板在车的位置
+    int armor_direction = 0;//1向右 -1 向左
+    int num = 0;//运行次数
     //蓝色th参数
-    int blue_armor_gray_th = 80;
-    int blue_armor_color_th = 100;
+    int blue_armor_gray_th = 50;
+    int blue_armor_color_th = 70;
     //红色th参数
-    int red_armor_gray_th = 20; //视频20
-    int red_armor_color_th = 50;
+    int red_armor_gray_th = 142; //60 45
+    int red_armor_color_th = 100;//192 95 10.50
+    // Point lost_armor_center;//上一帧装甲板位置
+
+    int roi_num = 0;//roi计数
+    int lose_roi_num = 0;//roi丢失计数
+    int roi_temp = 0;
+    int roi_num_law[5] = {0};//roi规律
+    int armor_gray_th = 50;
+    int h_min = 0;//0 80 116 222 21 95 red
+    int h_max = 80;//115 173 136 255 90 255 blue
+    int s_min = 130;
+    int s_max = 255;
+    int v_min = 130;
+    int v_max = 255;
 };
+
+

@@ -11,49 +11,103 @@ float Distance(Point a, Point b)
 {
     return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
-
-void ArmorPlate::eliminate()
-{
-    this->success_armor = false;
-    // this->draw_img = Mat::zeros(Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS), CV_8UC3);
-    this->rect_num = 0;
-#if ROI_IMG == 1
-
-    // if (armor_roi.x <= 0 || armor_roi.x >= CAMERA_RESOLUTION_COLS || armor_roi.y <= 0 || armor_roi.y >= CAMERA_RESOLUTION_ROWS ||
-    // armor_roi.width < 0 || armor_roi.width > CAMERA_RESOLUTION_COLS || armor_roi.height > CAMERA_RESOLUTION_ROWS ||armor_roi.height<0)
-    // {
-    //     lost_success_armor = false;
-    //     armor_roi = Rect(0, 0, 0, 0);
-    // }
-
-#endif
-}
-
 /**
- * @brief 图像预处理
+ * @brief 释放内存
+ * 
+ */
+void ImageProcess::free_Memory()
+{   
+    lost_armor_success = armor_success;
+    armor_success = false;
+    if(light_count > 0)
+    {
+        light.clear();
+        vector<RotatedRect> (light).swap(light);
+        if(armor_count > 0)
+        {
+            armor.clear();
+            vector<Armor_data> (armor).swap(armor);
+        }
+    }
+}
+/**
+ * @brief hsv预处理 减少光照影响
+ * 
+ * @param src_img 
+ * @param enemy_color 
+ */
+void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
+{
+    //保存原图像
+    this->frame = src_img;
+    // imshow(" ", frame);
+    //转灰度图
+    Mat gray_img, hsv_img;
+    Mat bin_img_color, bin_img_gray;
+    cvtColor(this->frame, gray_img, COLOR_BGR2GRAY);
+    cvtColor(this->frame, hsv_img, COLOR_BGR2HSV_FULL);
+#if IS_PARAM_ADJUSTMENT == 1
+    namedWindow("src_img", WINDOW_AUTOSIZE);
+    createTrackbar("H_MIN:", "src_img", &h_min, 255, NULL);
+    createTrackbar("H_MAX:", "src_img", &h_max, 255, NULL);
+    createTrackbar("S_MIN:", "src_img", &s_min, 255, NULL);
+    createTrackbar("S_MAX:", "src_img", &s_max, 255, NULL);
+    createTrackbar("V_MIN:", "src_img", &v_min, 255, NULL);
+    createTrackbar("V_MAX:", "src_img", &v_max, 255, NULL);
+#endif
+    if (enemy_color == 0)
+    {
+        // createTrackbar("GRAY_TH_BLUE:", "src_img", &blue_armor_gray_th, 255, NULL);
+        //115 173 136 255 90 255 blue
+#if IS_PARAM_ADJUSTMENT == 0
+        h_min = 115;
+        h_max = 173;
+#endif
+    }
+    else if (enemy_color == 1)
+    {
+        //0 80 116 222 90 255 red
+#if IS_PARAM_ADJUSTMENT == 0
+        h_min = 0;
+        h_max = 80;
+#endif
+    }
+    inRange(hsv_img, Scalar(h_min, s_min, v_min), Scalar(h_max, s_max, v_max), bin_img_color);
+    threshold(gray_img, bin_img_gray, this->armor_gray_th, 255, THRESH_BINARY);
+    Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
+    dilate(bin_img_color, bin_img_color, element);
+#if SHOW_BIN_IMG == 1    
+    imshow("gray_img", bin_img_gray);
+    imshow("mask", bin_img_color);
+    imshow("src_img", bin_img_color);
+#endif
+    //保存处理后的图片
+    this->mask = bin_img_color;
+    this->gray_img = bin_img_gray;
+}
+/**
+ * @brief 图像预处理 RGB
  * 
  * @param src_img -传入原图像
  * @param enemy_color -传入敌方颜色
  */
-void ImageProcess::pretreat(Mat src_img, int enemy_color)
+void ImageProcess::Pretreat_Rgb(Mat src_img, int enemy_color)
 {
     //保存原图像
     this->frame = src_img;
+    // imshow(" ", frame);
     //转灰度图
     Mat gray_img;
     cvtColor(this->frame, gray_img, COLOR_BGR2GRAY);
     //分离通道
     vector<Mat> _split;
-    split(src_img, _split);
+    split(this->frame, _split);
     //判断颜色
     Mat bin_img_color, bin_img_gray;
-    
-    
+    // cout<<enemy_color<<endl;
     if (enemy_color == 0)
     {
-        
         subtract(_split[0], _split[2], bin_img_color); // b - r
-
 #if IS_PARAM_ADJUSTMENT == 1
         namedWindow("src_img", WINDOW_AUTOSIZE);
         createTrackbar("GRAY_TH_BLUE:", "src_img", &blue_armor_gray_th, 255, NULL);
@@ -64,13 +118,10 @@ void ImageProcess::pretreat(Mat src_img, int enemy_color)
         threshold(gray_img, bin_img_gray, blue_armor_gray_th, 255, THRESH_BINARY);
         threshold(bin_img_color, bin_img_color, blue_armor_color_th, 255, THRESH_BINARY);
 #endif
-
     }
     else if (enemy_color == 1)
     {
-
         subtract(_split[2], _split[0], bin_img_color); // r - b
-        double t = (double)cv::getTickCount(); //开始计时
 #if IS_PARAM_ADJUSTMENT == 1
         namedWindow("src_img", WINDOW_AUTOSIZE);
         createTrackbar("GRAY_TH_RED:", "src_img", &red_armor_gray_th, 255);
@@ -80,53 +131,36 @@ void ImageProcess::pretreat(Mat src_img, int enemy_color)
 #else
         threshold(gray_img, bin_img_gray, red_armor_gray_th, 255, THRESH_BINARY);
         threshold(bin_img_color, bin_img_color, red_armor_color_th, 255, THRESH_BINARY);
-#endif
-        t = ((double)cv::getTickCount() - t) / cv::getTickFrequency(); //结束计时
-        int fps = int(1.0 / t);                                        //转换为帧率
-        // cout << "FPS: " << fps << endl;                                //输出帧率
+#endif                              //输出帧率
     }
 
-    Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 5));
+    Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
+
+    dilate(bin_img_gray, bin_img_gray, element);
+    dilate(bin_img_color, bin_img_color, element);
+    bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
+    dilate(bin_img_color, bin_img_color, element);
 #if SHOW_BIN_IMG == 1
     imshow("gray_img", bin_img_gray);
     imshow("mask", bin_img_color);
-#endif
-
-    // bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
-    // medianBlur(bin_img_color, bin_img_color, 5);
-    dilate(bin_img_gray, bin_img_gray, element);
-    dilate(bin_img_color, bin_img_color, element);
-    medianBlur(bin_img_color, bin_img_color, 3);
-
-    bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
-    // dilate(bin_img_color, bin_img_color, element);
-#if SHOW_BIN_IMG == 1
     imshow("src_img", bin_img_color);
 #endif
     //保存处理后的图片
     this->mask = bin_img_color;
     this->gray_img = bin_img_gray;
+    
+    //清空内存
     _split.clear();
     vector<Mat>(_split).swap(_split);
 }
 
 /**
- * @brief 寻找可能为等灯条的物体
+ * @brief 寻找灯条 通过灯条的长宽、大小和角度 筛选灯条
  * 
- * @param mask 传入预处理后的二值化图片
- * @return true 找到灯条
- * @return false 没有灯条
  */
-bool LightBar::find_light(Mat mask)
+void ImageProcess::find_Light()
 {
-
-#if DRAW_LIGHT_IMG == 1
-    Mat draw = Mat::zeros(mask.size(), CV_8UC3);
-#endif
-    // this->img_cols = mask.cols;
-    // this->img_rows = mask.rows;
-    int success = 0;
-    RotatedRect minRect;
+    RotatedRect box;
     /*轮廓周长*/
     int perimeter = 0;
     vector<vector<Point>> contours;
@@ -134,66 +168,217 @@ bool LightBar::find_light(Mat mask)
     //筛选，去除一部分矩形
     for (size_t i = 0; i < contours.size(); i++)
     {
-        perimeter = arcLength(contours[i], true); //轮廓周长
-        if (perimeter > 30 && perimeter < 4000 && contours[i].size() >= 5)
+        perimeter = arcLength(contours[i], true); 
+        //轮廓周长
+        if (perimeter < 200 && perimeter > 4000 && contours[i].size() < 5)
         {
-            //椭圆拟合
-            minRect = fitEllipse(Mat(contours[i]));
+            continue;
+        }
+        
+        //椭圆拟合
+        box = fitEllipse(Mat(contours[i]));
 
-            //重新定义长宽和角度
-            if (minRect.angle > 90.0f)
-            {
-                minRect.angle = minRect.angle - 180.0f;
-            }
-
-            //灯条长宽比
-            float light_w_h;
-            if (minRect.size.height == 0)
-            {
-                continue;
-            }
-            light_w_h = minRect.size.width / minRect.size.height;
-
-            if (fabs(minRect.angle) < this->light_angle && light_w_h < this->light_aspect_ratio)
-            {
-                this->light.push_back(minRect); //保存灯条
-                success++;
+        //重新定义长宽和角度
+        if (box.angle > 90.0f)
+        {
+            box.angle = box.angle - 180.0f;
+        }
+        
+        //灯条长宽比
+        float light_h_w;
+        float  _h = MAX(box.size.width, box.size.height);
+        float  _w = MIN(box.size.width, box.size.height);
+        light_h_w = _w / _h;
+        // cout <<light_h_w<<endl;
+        if (fabs(box.angle) < 40 && light_h_w < 0.6f)
+        {
+            this->light.push_back(box); //保存灯条
+            light_count ++;
 #if DRAW_LIGHT_IMG == 1
-                Point2f vertex[4];
-                minRect.points(vertex);
-                for (int l = 0; l < 4; l++)
-                {
-                    line(draw, vertex[l], vertex[(l + 1) % 4], Scalar(0, 255, 255), 3, 8);
-                }
-                imshow("draw", draw);
-#endif
+            Point2f vertex[4];
+            box.points(vertex);
+            for (int l = 0; l < 4; l++)
+            {
+                line(draw_img, vertex[l], vertex[(l + 1) % 4], Scalar(0, 255, 255), 3, 8);
             }
+            imshow("draw", draw_img);
+#endif
         }
     }
+    //清空内存
     contours.clear();
     vector<vector<Point>> (contours).swap(contours);
-#if DRAW_LIGHT_IMG == 1
-    imshow("light", draw);
-#endif
-    return success;
+}
+/**
+ * @brief 运行
+ * 
+ * @return true 正确得到装甲板
+ * @return false 无法得到装甲板
+ */
+bool ImageProcess::Processing()
+{
+    //归零
+    armor_count = 0;
+    draw_img = Mat::zeros(frame.size(), CV_8UC3);
+    light_count = 0;
+    //寻找灯条
+    find_Light();
+    
+    //灯条少于2 停止运行
+    if(this->light_count < 2)
+    {
+        return false;
+    }
+    
+    //灯条拟合装甲板
+    fitting_Armor();
+    
+    //无装甲
+    if(armor_count < 1)
+    {
+        return false;
+    }
+    //
+    armor_success = true;
+
+    //多装甲板筛选
+    armor_Screening();
+    // direction_Judgment();
+    return true;
 }
 
 /**
- * @brief 灯条筛选装甲板
+ * @brief 多装甲板筛选 选择最优装甲板
  * 
- * @param src_img 传入灰度图
- * @return int 返回装甲板数量
  */
-bool LightBar::armor_fitting(Mat src_img)
+void ImageProcess::armor_Screening()
 {
-    int success_armor = 0;
-    for (size_t i = 0; i < light.size(); i++)
+    if(armor_count < 2)
     {
-        for (size_t j = i + 1; j < light.size(); j++)
+        optimal_armor = 0;
+    }
+    else
+    {
+        int max_priority = 3;
+        for (int i = 0; i < armor_count; i ++)
+        {
+            
+            //判断左右两个灯条y点差值
+            int diff_y = fabs(armor[i].left_light.center.y - armor[i].right_light.center.y);
+            if(diff_y < armor[i].min_light_h * 0.15)
+            {
+                armor[i].priority += 3;
+            }
+            else if(diff_y < armor[i].min_light_h *0.25)
+            {
+                armor[i].priority +=2;
+            }
+            else if(diff_y < armor[i].min_light_h *0.5)
+            {
+                armor[i].priority +=1;
+            }
+
+            //判断左右两点高度差
+            int diff_h = fabs(armor[i].left_light_height - armor[i].right_light_height);
+            if(diff_h < armor[i].max_light_h * 0.1)
+            {
+                armor[i].priority +=2;
+            }
+            else if(diff_h < armor[i].min_light_h * 0.2)
+            {
+                armor[i].priority +=1;
+            }
+            
+            //判断装甲板在车的左右
+            // cout<<armor[i].tan_angle<<endl;
+            if(armor[i].tan_angle <= 5 && armor[i].tan_angle >= -5)//中
+            {
+                armor[i].priority +=2;
+                armor[i].position = 0;
+            }
+            else if(armor[i].tan_angle > 5)//右
+            {
+                armor[i].priority +=1;
+                armor[i].position = 1;
+            }
+            else//左
+            {
+                armor[i].priority +=1;
+                armor[i].position = 1;
+            }
+
+            if(armor[i].left_right_h < 1.2 || armor[i].left_right_h > 0.8)
+            {
+                armor[i].priority +=1;
+            }
+
+            if(armor[i].left_right_w < 1.2 || armor[i].left_right_w > 0.8)
+            {
+                armor[i].priority +=1; 
+            }
+            //优先小装甲板
+            if(armor[i].distinguish == 0)
+            {
+                armor[i].priority += 1;
+            }
+            
+            
+            if(armor[i].priority > max_priority)
+            {
+                optimal_armor = i;
+                // max_priority = armor[i].priority;
+            }
+            else if(armor[i].priority == max_priority)//优先级相同比较高度
+            {
+                int temp_dist = Distance(armor[i].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
+                int temp_depth = Distance(armor[optimal_armor].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
+                if(temp_dist < temp_depth)
+                {
+                    optimal_armor = i;
+                }
+                else{
+                    if(fabs(armor[i].height) >= fabs(armor[optimal_armor].height))
+                    {
+                        optimal_armor = i;
+                    }
+                    else{
+                        if(armor[i].tan_angle <= armor[optimal_armor].tan_angle)
+                        {
+                            optimal_armor = i;
+                        }
+                    }
+                }
+                
+                // if()
+                // {
+
+                // }
+            }
+        }
+    }
+#if DRAW_ARMOR_IMG == 1
+    rectangle(draw_img, armor[optimal_armor].armor_rect.boundingRect(), Scalar(0, 0, 255), 3, 8);
+    imshow("draw", draw_img);
+    draw_img = Mat::zeros(frame.size(), CV_8UC3);
+#endif
+    lost_armor_center = armor_center;
+    armor_position = armor[optimal_armor].position;
+    armor_center = armor[optimal_armor].armor_rect.center;
+}
+/**
+ * @brief 拟合装甲板
+ * 
+ */
+void ImageProcess::fitting_Armor()
+{
+     //遍历灯条
+    for (size_t i = 0; i < this->light.size(); i++)
+    {
+        for (size_t j = i + 1; j < this->light.size(); j++)
         {
             //区分左右灯条
             int light_left = 0, light_right = 0;
-            if (light[i].center.x > light[j].center.x)
+            if (this->light[i].center.x > this->light[j].center.x)
             {
                 light_left = j;
                 light_right = i;
@@ -203,32 +388,28 @@ bool LightBar::armor_fitting(Mat src_img)
                 light_left = i;
                 light_right = j;
             }
-
+    
+            //保存左右灯条
+            armor_data.left_light = this->light[light_left];
+            armor_data.right_light = this->light[light_right];
             //计算灯条中心点形成的斜率
             float error_angle = atan((light[light_right].center.y - light[light_left].center.y) / (light[light_right].center.x - light[light_left].center.x));
+            // cout<<error_angle<<endl;
 
-            if (error_angle < 9.0f)
+            if (error_angle < 5.0f)
             {
-                if (this->light_judge(light_left, light_right))
-                {
-                    if (this->average_color(this->armor_rect(light_left, light_right, src_img, error_angle)) < 50)
+                armor_data.tan_angle = atan(error_angle) * 180 / CV_PI;
+                if (this->light_Judge(light_left, light_right))
+                {   
+                    if (this->average_Color() < 20)
                     {
-                        success_armor++;
-                        //储存灯条左右下标
-                        this->light_subscript.push_back(light_left);
-                        this->light_subscript.push_back(light_right);
+                        armor_count++;
+                        armor.push_back(armor_data);
+                        // armor_count++;//数据正确则保存
                     }
                 }
             }
         }
-    }
-    if (success_armor > 0)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
     }
 }
 
@@ -239,45 +420,51 @@ bool LightBar::armor_fitting(Mat src_img)
  * @return true 找到了符合装甲板条件的位置
  * @return false 没找到了符合装甲板条件的位置
  */
-bool LightBar::light_judge(int i, int j)
+bool ImageProcess::light_Judge(int i, int j)
 {
-    float left_h = MAX(light[i].size.height, light[i].size.width);
-    float left_w = MIN(light[i].size.height, light[i].size.width);
-    float right_h = MAX(light[j].size.height, light[j].size.width);
-    float right_w = MIN(light[j].size.height, light[j].size.width);
-    // cout<<"111111111111111111111111111111111111"<<endl;
-    if (left_h < right_h * 1.65 && left_w > right_w * 0.5 && left_h > right_h * 0.65 && left_w < right_w * 1.7)
+    armor_data.left_light_height = MAX(light[i].size.height, light[i].size.width);
+    armor_data.left_light_width = MIN(light[i].size.height, light[i].size.width);
+    armor_data.right_light_height = MAX(light[j].size.height, light[j].size.width);
+    armor_data.right_light_width = MIN(light[j].size.height, light[j].size.width);
+    armor_data.min_light_h = MIN(armor_data.right_light_height, armor_data.left_light_height);
+    armor_data.max_light_h = MAX(armor_data.right_light_height, armor_data.left_light_height);
+    armor_data.left_right_h = armor_data.left_light_height / armor_data.right_light_height;
+    armor_data.left_right_w = armor_data.left_light_width / armor_data.right_light_width;
+    if (armor_data.left_right_h < 2
+            && armor_data.left_right_w > 0.2
+            && armor_data.left_right_h > 0.5
+            && armor_data.left_right_w < 5)
     {
-        // cout<<"22222222222222222222222222222222222222"<<endl;
-        // float h_ = MIN(left_h , right_h) / 2.0f;
-        float h_max = (left_h + right_h) / 2.0f;
+        armor_data.height = (armor_data.right_light_height + armor_data.left_light_height) / 2.0f;
         // 两个灯条高度差不大
-        // cout<<fabs(light[i].center.y - light[j].center.y)<<endl;
-        if (fabs(light[i].center.y - light[j].center.y) < h_max * 1.6  && fabs(light[i].angle - light[j].angle)<= 5.0f)
+        if (fabs(armor_data.left_light.center.y - armor_data.right_light.center.y) < armor_data.height)
         {
-            // cout<<fabs(light[i].ang?le) - fabs(light[j].angle)<<endl;
-            // if(fabs(light[j].angle) - fabs(light[i].angle) < 0.4f)
-            // {
-                //装甲板长宽比
-                float w_max = Distance(light[j].center , light[i].center);
-                // float h_max = (left_h + right_h) / 2.0f;
-                // cout<<w_max/h_max<<endl;
-                if (w_max < h_max * 2.5 && w_max > h_max * 0.5f)
+            if(fabs(armor_data.left_light_height  - armor_data.right_light_height) < armor_data.height/4)
+            {
+                armor_data.width = Distance(armor_data.left_light.center, armor_data.right_light.center);
+                armor_data.aspect_ratio = armor_data.width/armor_data.height;//保存长宽比
+                // cout<<armor_data.left_light.angle - armor_data.right_light.angle<<endl;
+                if(armor_data.left_light.angle - armor_data.right_light.angle < 5)//两侧灯条角度差
                 {
-                    /*change place*/
-                    char_armor = 1;
-                    // 100;
-                    /*************/
-                    return true;
+                    if(armor_data.width*armor_data.height > 500)
+                    {
+                        // cout<< armor_data.aspect_ratio<<endl;
+                        //装甲板长宽比
+                        if (armor_data.aspect_ratio < 2.5f && armor_data.aspect_ratio > 1.5f)
+                        {
+                            armor_data.distinguish = 0;//小装甲板
+                            return true;
+                        }
+                        
+                        if (armor_data.aspect_ratio > 2.55f && armor_data.aspect_ratio < 4.6f)
+                        {
+                            armor_data.distinguish = 1;//大装甲板
+                            return true;
+                        }
+                    }
+                    
                 }
-
-                if (w_max > h_max * 3.05f && w_max < h_max * 5.2f)
-                {
-                    /*change place*/
-                    char_armor = 2;
-                    return true;
-                }
-            // }
+            }
         }
     }
     return false;
@@ -289,36 +476,14 @@ bool LightBar::light_judge(int i, int j)
  * @param roi 传入需要计算的图像
  * @return int 返回平均强度
  */
-int LightBar::average_color(Mat roi)
-{
-    int average_intensity = static_cast<int>(mean(roi).val[0]);
-    return average_intensity;
-}
-
-/**
- * @brief 保存装甲板的旋转矩形
- * 
- * @param i Light下标
- * @param j Light下标
- * @param src_img 传入图像
- * @param angle 旋转矩形角度
- * @return Mat 返回装甲板的ROI区域
- */
-Mat LightBar::armor_rect(int i, int j, Mat src_img, float angle)
-{
-    float right_w = MIN(light[j].size.width, light[j].size.height);
-    float right_h = MAX(light[j].size.width, light[j].size.height);
-    float left_w = MIN(light[i].size.width, light[i].size.height);
-    float left_h = MAX(light[i].size.width, light[i].size.height);
-    // cout<<right_h<<", "<<left_h<<endl;
-    RotatedRect rects = RotatedRect(
-        Point((light[i].center.x + light[j].center.x) / 2, (light[i].center.y + light[j].center.y) / 2),
-        Size(Distance(light[i].center, light[j].center) - (left_w + right_w), 
-        (right_h + left_h)/2),
-        angle);
-    this->armor.push_back(rects); //储存装甲板旋转矩形
+int ImageProcess::average_Color()
+{   
+    RotatedRect rects = RotatedRect((armor_data.left_light.center + armor_data.right_light.center)/2,
+        Size(armor_data.width - (armor_data.left_light_width + armor_data.right_light_width)/2, 
+        (armor_data.left_light_height + armor_data.right_light_height)/2),
+        armor_data.tan_angle);
+    armor_data.armor_rect = rects; //储存装甲板旋转矩形
     Rect _rect = rects.boundingRect();
-    Mat roi;
     if (_rect.x <= 0)
     {
         _rect.x = 0;
@@ -327,155 +492,85 @@ Mat LightBar::armor_rect(int i, int j, Mat src_img, float angle)
     {
         _rect.y = 0;
     }
-    if (_rect.y + _rect.height >= src_img.rows)
+    if (_rect.y + _rect.height >= gray_img.rows)
     {
-        _rect.height = src_img.rows - abs(_rect.y);
+        _rect.height = gray_img.rows - _rect.y;
     }
-    if (_rect.x + _rect.width >= src_img.cols)
+    if (_rect.x + _rect.width >= gray_img.cols)
     {
-        _rect.width = src_img.cols - abs(_rect.x);
+        _rect.width = gray_img.cols - _rect.x;
     }
-
-    roi = src_img(_rect);
-    return roi;
+    Mat roi = gray_img(_rect);
+    int average_intensity = static_cast<int>(mean(roi).val[0]);
+    // cout<<"average_intensity = "<<average_intensity<<endl;
+    return average_intensity;
 }
 
-/**
- * @brief 多个装甲板筛选优先级
- * 
- * @return Point 最优先返回最大装甲板
- */
-int LightBar::optimal_armor()
+
+void ImageProcess::roi_Range()
 {
-    size_t max = 0;
-    int max_num = 0;
-    if (this->armor.size() < 1)
-        return 0;
-    for (size_t i = 0; i < this->light_subscript.size(); i += 2)
+    if (lost_armor_success)
     {
-        // //灯条是“\\”或者“//”和“||”这样
-        // cout<<fabs(this->light[this->light_subscript[i]].angle - this->light[this->light_subscript[i + 1]].angle)<<endl;
-        // if (fabs(this->light[this->light_subscript[i]].angle - this->light[this->light_subscript[i + 1]].angle) < 3)
+        Point lost_armor = armor_roi.tl();
+        int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2 + armor_roi.x;
+        int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2 + armor_roi.y;
+        int width = armor[optimal_armor].width*4;
+        int height = armor[optimal_armor].height*4;
+        if (point_x < 0)
+        {
+            point_x = 0;
+        }
+        if (point_y < 0)
+        {
+            point_y = 0;
+        }
+        if (point_x + width >= CAMERA_RESOLUTION_COLS)
+        {
+            width = CAMERA_RESOLUTION_COLS - abs(point_x);
+        }
+        if (point_y + height >= CAMERA_RESOLUTION_ROWS)
+        {
+            height = CAMERA_RESOLUTION_ROWS - abs(point_y);
+        }
+        armor_roi = Rect(point_x, point_y, width, height);
+        roi_num++;
+        // //切换装甲板roi归零
+        // if(Distance(lost_armor, armor_roi.tl()) > CAMERA_RESOLUTION_COLS/2)
         // {
-        //     this->priority.push_back(true);
+        //     switch_armor = true;
+        //     roi_num = 0;
         // }
-        // else
-        // {
-        //     continue;
-        // }
-
-        //灯条的高度差不超过最大灯条高度的四分之一
-        int left_h = MAX(this->light[this->light_subscript[i]].size.width, this->light[this->light_subscript[i]].size.height);
-        int right_h = MAX(this->light[this->light_subscript[i + 1]].size.width, this->light[this->light_subscript[i + 1]].size.height);
-        int _h = MAX(left_h, right_h) / 4;
-        int h_ = MIN(left_h, right_h);
-        if (fabs(this->light[this->light_subscript[i]].center.y - this->light[this->light_subscript[i + 1]].center.y) < h_/2)
-        {
-            this->priority.push_back(true);
-        }
-
-        //灯条高度差距不超过10%
-        if (left_h > h_ /3.6 || right_h > _h /3.6)
-        {
-            this->priority.push_back(true);
-        }
-        else{
-            continue;
-        }
-
-        //灯条中心点形成的直线与水平线的夹角f
-        float delta_y = this->light[this->light_subscript[i]].center.y - this->light[this->light_subscript[i + 1]].center.y;
-        float delta_x = this->light[this->light_subscript[i]].center.x - this->light[this->light_subscript[i + 1]].center.x;
-        float deviationAngle = abs(atan(delta_y / delta_x)) * 180 / CV_PI;
-        if (deviationAngle < 40)
-        {
-            this->priority.push_back(true);
-        }
-
-        //灯条的中心点到装甲板中心点的距离超过最小灯条的宽度
-        if (Distance(this->armor[i / 2].center, this->light[this->light_subscript[i]].center) > h_ / 2 && Distance(this->armor[i / 2].center, this->light[this->light_subscript[i + 1]].center) > h_ / 2)
-        {
-            this->priority.push_back(true);
-        }
-
-        if (this->armor[i / 2].size.width / this->armor[i / 2].size.height < 2.3f)
-        {
-            this->priority.push_back(true);
-        }
-        // else if (this->armor[i / 2].size.width / this->armor[i / 2].size.height >= 2)
-        // {
-        //     continue;
-        // }
-
-        if (this->priority.size() > 2)
-        {
-            if (this->priority.size() > max)
-            {
-                max = this->priority.size();
-                max_num = i;
-            }
-            else if (this->priority.size() == max)
-            {
-                //符合程度相同时选取更近的一位
-                // int this_wamh = Distance(this->light[this->light_subscript[i]].center , this->light[this->light_subscript[i + 1]].center);
-                // int max_wmah = Distance(this->light[this->light_subscript[max_num]].center , this->light[this->light_subscript[max_num + 1]].center);
-                int this_wamh = this->light[light_subscript[i]].size.height;
-                int max_wmah = this->light[light_subscript[max_num]].size.height;
-                if (this->armor[i / 2].size.width / this->armor[i / 2].size.height < 2)
-                {
-                    max_num = i;
-                }
-                else
-                {
-                    if (this_wamh > max_wmah)
-                    {
-                        max_num = i;
-                    }
-                }
-            }
-        }
-        this->priority.clear();
-    }
-    return max_num;
-}
-
-/**
- * @brief 清除vector数据
- * 
- */
-void LightBar::eliminate()
-{
-    light.clear();
-    armor.clear();
-    light_subscript.clear();
-    priority.clear();
-    vector<RotatedRect> (light).swap(light);
-    vector<RotatedRect> (armor).swap(armor);
-    vector<bool> (priority).swap(priority);
-    vector<int> (light_subscript).swap(light_subscript);
-}
-
-/**
- * @brief ROI坐标转换
- * 
- * @param i 丢失次数
- */
-void LightBar::coordinate_change(int i)
-{
-    if (i > 0 && i < MAXIMUM_LOSS)
-    {
-        //扩大两倍搜索范围
-        this->roi_rect = RotatedRect(
-            this->roi_rect.center,
-            Size(this->roi_rect.size.width * 2, this->roi_rect.size.height * 2),
-            this->roi_rect.angle);
+        lose_roi_num = 0;
     }
     else
     {
-        //丢失过多取消ROI
-        this->roi_rect = RotatedRect(
-            Point(CAMERA_RESOLUTION_COLS / 2, CAMERA_RESOLUTION_ROWS / 2),
-            Size(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS),
-            this->roi_rect.angle);
-    }
+        int point_x = armor[optimal_armor].armor_rect.center.x - armor[optimal_armor].width*2;
+        int point_y = armor[optimal_armor].armor_rect.center.y - armor[optimal_armor].height*2;
+        int width = armor[optimal_armor].width*4;
+        int height = armor[optimal_armor].height*4;
+        if (point_x < 0)
+        {
+            point_x = 0;
+        }
+        if (point_y < 0)
+        {
+            point_y = 0;
+        }
+        if (point_x + width >= CAMERA_RESOLUTION_COLS)
+        {
+            width = CAMERA_RESOLUTION_COLS - point_x;
+        }
+        if (point_y + height >= CAMERA_RESOLUTION_ROWS)
+        {
+            height = CAMERA_RESOLUTION_ROWS - point_y;
+        }
+        armor_roi = Rect(point_x, point_y, width, height);
+        lose_roi_num++;
+        if(roi_temp > 5)
+        {
+            roi_temp = 0;
+        }
+        roi_num_law[roi_temp] = roi_num;
+        roi_temp++;
+    }     
 }

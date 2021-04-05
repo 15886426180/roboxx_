@@ -1,10 +1,5 @@
 #ifndef CONTROL_H
 #define CONTROL_H
-#define ARC_ANGLE 57.29578
-/**
- * @brief 弧度转角度
- * 
- */
 #define CALL_SERIALPORT 1
 /**
  * @brief 打开串口传输
@@ -17,7 +12,7 @@
   @param: 0         二维＋深度
   @param: 1         云台俯仰与偏航角度
 */
-#define SHOW_SERIAL_INFORMATION 1
+#define SHOW_SERIAL_INFORMATION 0
 /**
   @brief: 是否打印串口数据信息
   @param: 0     不打印
@@ -37,6 +32,12 @@
  * @param: 1 调用
  * @param: 0 不调用
  */
+#define SHOW_ANGLE_INFORMATION 1
+/**
+  @brief: 是否打印PNP解算角度信息
+  @param: 0     不打印
+  @param: 1     打印
+*/
 #define USB_CAPTURE_DEFULT "/home/xx/下载/视频/效果图/armor_2.avi"
 /**
   @brief: 相机的默认值
@@ -49,18 +50,14 @@
   @param: 0     使用工业相机
   @param: 1     使用普通USB相机
 */
-#define MAXIMUM_LOSS 2
-/**
- * @brief 最大丢失次数
- * 
- */
+
 #define ROI_IMG 1
 /**
  * @brief 打开ROI截取
  * @param 1 截取
  * @param 0 不截取 
  */
-#define FPS_SHOW 0
+#define FPS_SHOW 1
 /**
  * @brief 是否显示帧数
  * @param 1 显示
@@ -74,14 +71,14 @@
  * @param 0 不绘制
  */
 
-#define DRAW_ARMOR_IMG 1
+#define DRAW_ARMOR_IMG 0
 /**
  * @brief 是否绘制装甲板在图像上
  * @param 1 绘制
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 1
+#define SHOW_BIN_IMG 0
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -95,7 +92,7 @@
  * @param 0 蓝色
  */
 
-#define IS_PARAM_ADJUSTMENT 1
+#define IS_PARAM_ADJUSTMENT 0
 /**
   @brief 是否进入调参模式
   @param 0     否
@@ -112,7 +109,7 @@
  * @brief 装甲板实际高度(mm)
  * 
  */
-#define BIG_ARMORPLATE_WIDITH 250
+#define BIG_ARMORPLATE_WIDTH 250
 /**
  * @brief 大装机板实际宽度(mm)
  * 
@@ -128,21 +125,21 @@
  * @brief Y轴焦距
  * 
  */
-#define CALL_PNP 0
-/**
- * @brief 是否调用测距
- * @param 0     否
- * @param 1     是
- */
+// #define CALL_PNP 0
+// /**
+//  * @brief 是否调用测距
+//  * @param 0     否
+//  * @param 1     是
+//  */
 
 #define LIGHT_WIDITH 10
 /**
  * @brief 灯条实际宽度(mm)
  * 
  */
-#define CAMERA_EXPOSURETIME 400
-#define CAMERA_RESOLUTION_COLS 1280
-#define CAMERA_RESOLUTION_ROWS 800
+#define CAMERA_EXPOSURETIME 800
+#define CAMERA_RESOLUTION_COLS 960 //16
+#define CAMERA_RESOLUTION_ROWS 600 // 2
 #define CAMERA_RESOLUTION_COLS_FOV ((1280 - CAMERA_RESOLUTION_COLS) * 0.5)
 #define CAMERA_RESOLUTION_ROWS_FOV ((1024 - CAMERA_RESOLUTION_ROWS) * 0.5)
 #define CAMERA_RED_GAIN 100
@@ -163,15 +160,10 @@
 #define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
-#define CAMERA_PARAM_FILE "/home/gcurobot/xx_github/armorplate/camera.xml"
+#define CAMERA_PARAM_FILE "/home/xx/roboxx_github/roboxx_/robomaster/camera.xml"
 #endif
 /**
  * @brief 相机标定文件位置
- * 
- */
-#define PI 3.1415926
-/**
- * @brief π
  * 
  */
 // #define BIG_ARMORPLATE_WIDTH 25
@@ -185,12 +177,7 @@
  * 
  */
 //buff-filter(buff_detect.cpp)
-#define SHOW_ANGLE_INFORMATION 0
-/**
-  @brief: 是否打印PNP解算角度信息
-  @param: 0     不打印
-  @param: 1     打印
-*/
+
 #define REVISE 0.1
 
 #define MAX_BUFF_WIDTH 230
@@ -203,11 +190,13 @@
 #define DEAD_BAND 0
 #define SIZE_X 960
 #define SIZE_Y 480
+#define ARMOR_BOTTOM_H 190
+
 
 //buff-model尺寸(solve_pnp.cpp)
-#define BULLET_SPEED 29             //子弹射速
+#define BULLET_SPEED 18             //子弹射速
 #define BUFF_BOTTOM_H -100          //buff最底装甲板距离地面高度 728.84
-#define ROBOT_H 330                 //枪口高度    现在是330~340 也有可能是摄像头高度，待测
+#define ROBOT_H 338                 //枪口高度    现在是330~340 也有可能是摄像头高度，待测
 #define BUFF_ROBOT_Z 6915.340249311 //枪口和buff的直线距离    6915.340249311 6817.708 7212.708
 #define OFFSET_Y_BARREL_PTZ 0       //枪管和云台的高度差
 
@@ -224,6 +213,7 @@
 #define KP 0.6
 #define KI 0.02
 #define KD 0.1
+
 
 #define PRE_ANGLE 35
 #endif
