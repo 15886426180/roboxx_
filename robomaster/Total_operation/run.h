@@ -19,7 +19,7 @@ public:
     void Angle_compensate();//pnp计算角度补偿
     void Mode_Selection(); // 模式选择
     void Automatic_fire();//自动开火
-
+    bool top();//小陀螺判断(陀螺仪)
     ImageProcess img;
     Max_Buff buff;
     SerialPort serial;
@@ -34,9 +34,11 @@ public:
     
     int enemy_color = 1;//敌方颜色
     int pattern = 0;//模式选择
-    int firing = 0;
+    int firing = 0;//射速15 18 30
     int fire_num = 0;//开火计数
     bool data_success = false;
+    bool judge_top = false;//小陀螺或者扭腰判断
+    int gyro_arr[50] = {0};//陀螺仪数据储存 50帧分析一次
     int _yaw = 0;
     float yaw = 0;
     int _pitch = 0;

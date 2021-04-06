@@ -75,6 +75,8 @@ public:
     bool lost_armor_success = false;
     bool armor_success = false;
     bool switch_armor = false;//切换装甲板
+
+    int lost_distance_armor = 0;//两帧装甲板之间的距离
     int amplitude = 0;//幅度
     int armor_count = 0;//装甲板计数
     int light_count = 0;//灯条计数

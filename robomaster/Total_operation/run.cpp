@@ -186,6 +186,39 @@ void WorKing::Mode_Selection()
     enemy_color = ctrl_arr[1];
     pattern = ctrl_arr[2];
     firing = ctrl_arr[3];
+    if(img.num == 50)
+    {
+        judge_top = top();
+        img.num = 0;
+    }
+    gyro_arr[img.num] = ctrl_arr[4];//陀螺仪数据保存
+
+}
+/**
+ * @brief 小陀螺判断
+ * 
+ * @return true 
+ * @return false 
+ */
+bool WorKing::top()
+{
+    float sum = 0;//数据平均值
+    float variance = 0;//数据方差
+    for(int i = 0; i < 50; i++)
+    {
+        sum += gyro_arr[i];
+    }
+    sum = sum/50;
+    for(int i = 0; i< 50; i++)
+    {
+        variance += pow(img.roi_num_law[i] - sum ,2);
+    }
+    variance = sqrt(variance/5);
+    if(variance < 5)
+    {
+        return true;
+    }
+    return false;
 }
 /**
  * @brief 角度补偿
@@ -263,26 +296,9 @@ void WorKing::Angle_compensate()
  */
 void WorKing::Automatic_fire()
 {
-    line(frame, Point(0 , CAMERA_RESOLUTION_ROWS/2), Point(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS/2), Scalar(0, 255, 255));
-    line(frame, Point(CAMERA_RESOLUTION_COLS/2 , 0), Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS), Scalar(0, 255, 255));
-    
-    // cout<<"depth = "<<depth<<endl;
-    float variance = 0;//方差小于一定数值为周期性变化
-    if(img.roi_num_law[4] > 0)
-    {
-        float sum = 0;
-        for(int i = 0; i < 5; i++)
-        {
-            sum+=img.roi_num_law[i];
-        }
-        sum = sum/5;
-        for(int i = 0; i< 5; i++)
-        {
-            variance += pow(img.roi_num_law[i] - sum ,2);
-        }
-        variance = sqrt(variance/5);
-    }
-    cout<<"yaw = "<<yaw<<endl;
+    // line(frame, Point(0 , CAMERA_RESOLUTION_ROWS/2), Point(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS/2), Scalar(0, 255, 255));
+    // line(frame, Point(CAMERA_RESOLUTION_COLS/2 , 0), Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS), Scalar(0, 255, 255));
+    // cout<<"yaw = "<<yaw<<endl;
     //装甲板范围
     if(img.armor[img.optimal_armor].distinguish > 0)
     {
@@ -292,44 +308,38 @@ void WorKing::Automatic_fire()
         offset_yaw = 6.5441*exp(-0.001*depth) + 0.5;
     }
     
-    cout<<"offset_yaw = "<<offset_yaw<<endl;
+    // cout<<"offset_yaw = "<<offset_yaw<<endl;
     //自动开火判断
-    if(fabs(yaw) <= offset_yaw && fabs(img.armor[img.optimal_armor].tan_angle) < 5 && depth < 5000) 
-    {
-        if(variance == 0)
+    if(fabs(yaw) <= offset_yaw 
+            && fabs(img.armor[img.optimal_armor].tan_angle) < 10 
+            && depth < 5000 && img.lost_distance_armor < 200) 
+    {    
+        //是小陀螺
+        if(judge_top)
         {
-            //一直ROI且没有周期性变化
-
-            if(img.roi_num > 10 && fire_num > 5)
+            cout<<"小陀螺模式进入"<<endl;
+            is_shooting = 1;//单发
+            cout<<"biu"<<endl;
+        }
+        else
+        {
+            cout<<"正常模式"<<endl;
+            if(img.lost_distance_armor < 50 && depth < 3500 && img.roi_num > 10 && fire_num > 2)
             {
                 is_shooting = 2;//自动
-                cout<<"piu piu piu piu piu"<<endl;
+                cout<<"你已经死了"<<endl;
             }
-            else if(img.roi_num > 2)
+            if(img.roi_num > 2)
             {   
                 is_shooting = 1;//单发
-                cout<<"piu"<<endl;
+                cout<<"biu"<<endl;
             }
-        }
-        else{
-            //有周期性变化
-            
-            if(variance > 2 && img.roi_num > 10)
-            {
-                is_shooting = 2;//自动
-                cout<<"piu piu piu piu piu"<<endl;
-            }
-            else if(variance < 2 && img.roi_num > 2)
-            {
-                // cout<<"小陀螺"<<endl;
-                is_shooting = 1;//单发
-                cout<<"piu"<<endl;
-            }
-            
-        }
+        }        
         //开火计数
         fire_num++;
     }
+    else
+    {
+        fire_num = 0;
+    }
 }
-
-

@@ -534,6 +534,7 @@ void ImageProcess::roi_Range()
         }
         armor_roi = Rect(point_x, point_y, width, height);
         roi_num++;
+        lost_distance_armor = Distance(lost_armor, armor_roi.tl());//前后两帧装甲板之间的距离
         // //切换装甲板roi归零
         // if(Distance(lost_armor, armor_roi.tl()) > CAMERA_RESOLUTION_COLS/2)
         // {
@@ -566,11 +567,12 @@ void ImageProcess::roi_Range()
         }
         armor_roi = Rect(point_x, point_y, width, height);
         lose_roi_num++;
-        if(roi_temp > 5)
+/*         if(roi_temp > 5)
         {
             roi_temp = 0;
         }
         roi_num_law[roi_temp] = roi_num;
-        roi_temp++;
+        roi_temp++; */
+        roi_num =0;//归零
     }     
 }
