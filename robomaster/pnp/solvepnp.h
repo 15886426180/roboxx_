@@ -20,7 +20,7 @@ public:
     void arrange_Point(RotatedRect left_light, RotatedRect right_light);
     // float armor_Point(RotatedRect left_light, float _w, float _h);
     void get_Angle(const Mat & pos_in_ptz);
-    void run_SolvePnp(float _W, float _H);
+    void run_SolvePnp(float _W, float _H, int _V);
     // float get_angle();
     // float calcu_depth();
     void vertex_Sort(RotatedRect &box);
@@ -50,5 +50,5 @@ public:
     const float barrel_ptz_offset_x = 0;
     const float barrel_ptz_offset_y = 0;
     const float overlap_dist = 0;
-
+    int fring_rate = 0;
 };

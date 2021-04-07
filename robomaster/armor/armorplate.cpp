@@ -82,6 +82,7 @@ void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
     imshow("mask", bin_img_color);
     imshow("src_img", bin_img_color);
 #endif
+    
     //保存处理后的图片
     this->mask = bin_img_color;
     this->gray_img = bin_img_gray;
@@ -191,7 +192,7 @@ void ImageProcess::find_Light()
         float  _w = MIN(box.size.width, box.size.height);
         light_h_w = _w / _h;
         // cout <<light_h_w<<endl;
-        if (fabs(box.angle) < 40 && light_h_w < 0.6f)
+        if (fabs(box.angle) < 40 && light_h_w < 0.8f)
         {
             this->light.push_back(box); //保存灯条
             light_count ++;
@@ -444,19 +445,19 @@ bool ImageProcess::light_Judge(int i, int j)
                 armor_data.width = Distance(armor_data.left_light.center, armor_data.right_light.center);
                 armor_data.aspect_ratio = armor_data.width/armor_data.height;//保存长宽比
                 // cout<<armor_data.left_light.angle - armor_data.right_light.angle<<endl;
-                if(armor_data.left_light.angle - armor_data.right_light.angle < 5)//两侧灯条角度差
+                if(fabs(armor_data.left_light.angle - armor_data.right_light.angle) < 5)//两侧灯条角度差
                 {
-                    if(armor_data.width*armor_data.height > 500)
+                    if(armor_data.width * armor_data.height > 500)
                     {
                         // cout<< armor_data.aspect_ratio<<endl;
                         //装甲板长宽比
-                        if (armor_data.aspect_ratio < 2.9f && armor_data.aspect_ratio > 0.7f)
+                        if (armor_data.aspect_ratio < 3.1f && armor_data.aspect_ratio > 0.6f)
                         {
                             armor_data.distinguish = 0;//小装甲板
                             return true;
                         }
                         
-                        if (armor_data.aspect_ratio > 2.9f && armor_data.aspect_ratio < 4.6f)
+                        if (armor_data.aspect_ratio > 3.1f && armor_data.aspect_ratio < 4.6f)
                         {
                             armor_data.distinguish = 1;//大装甲板
                             return true;

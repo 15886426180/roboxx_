@@ -96,12 +96,12 @@ public:
     int lose_roi_num = 0;//roi丢失计数
     int roi_temp = 0;
     int roi_num_law[5] = {0};//roi规律
-    int armor_gray_th = 50;
+    int armor_gray_th = 90;
     int h_min = 0;//0 80 116 222 21 95 red
     int h_max = 80;//115 173 136 255 90 255 blue
-    int s_min = 130;
+    int s_min = 60;
     int s_max = 255;
-    int v_min = 130;
+    int v_min = 145;
     int v_max = 255;
 };
 

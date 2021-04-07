@@ -20,6 +20,8 @@ void WorKing::Run()
     createTrackbar("_offset_y:", "parameter", &_offset_y, 1, NULL);
 
 #endif
+    // namedWindow("parameter", WINDOW_AUTOSIZE); 
+    // createTrackbar("offset_y:", "parameter", &offset_y, 2000, NULL); 
     for (;;)
     {
 #if FPS_SHOW == 1
@@ -33,7 +35,8 @@ void WorKing::Run()
         {
             capture >> frame;
         }
-
+        // line(frame, Point(0 , CAMERA_RESOLUTION_ROWS/2), Point(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS/2), Scalar(0, 255, 255));
+        // line(frame, Point(CAMERA_RESOLUTION_COLS/2 , 0), Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS), Scalar(0, 255, 255));
         
         Mode_Selection();
 
@@ -57,7 +60,7 @@ void WorKing::Run()
     src_img = frame;
 #endif
         pattern = 0;
-        enemy_color = 1;
+        // enemy_color = 1;
         switch (this->pattern)
         {
         case 0://自瞄
@@ -101,11 +104,11 @@ void WorKing::Run()
             //pnp角度结算
             if(img.armor[img.optimal_armor].distinguish == 0)
             {
-                pnp.run_SolvePnp(SMALL_ARMORPLATE_WIDTH, ARMORPLATE_HIGHT);
+                pnp.run_SolvePnp(SMALL_ARMORPLATE_WIDTH, ARMORPLATE_HIGHT, firing);
             }
             else
             {
-                pnp.run_SolvePnp(BIG_ARMORPLATE_WIDTH, ARMORPLATE_HIGHT);
+                pnp.run_SolvePnp(BIG_ARMORPLATE_WIDTH, ARMORPLATE_HIGHT, firing);
             }
             yaw = pnp.angle_x;
             pitch = pnp.angle_y;
@@ -147,8 +150,8 @@ void WorKing::Run()
     imshow("frame", frame);
     //清空相机内存
     cap.cameraReleasebuff();
-    // /* "Esc"-退出 */
-    if (waitKey(100) == 'q') 
+    // // /* "Esc"-退出 */
+    if (waitKey(1) == 'q') 
     {
       break;
     }
@@ -185,12 +188,12 @@ void WorKing::Mode_Selection()
     enemy_color = ctrl_arr[1];
     pattern = ctrl_arr[2];
     firing = ctrl_arr[3];
-    if(img.num == 50)
-    {
-        judge_top = top();
-        img.num = 0;
-    }
-    gyro_arr[img.num] = ctrl_arr[4];//陀螺仪数据保存
+    // if(img.num == 50)
+    // {
+    //     judge_top = top();
+    //     img.num = 0;
+    // }
+    // gyro_arr[img.num] = ctrl_arr[4];//陀螺仪数据保存
 
 }
 /**
@@ -235,15 +238,48 @@ void WorKing::Angle_compensate()
         yaw = yaw + offset_x / 100;
     }
     int dist = depth;
-    // cout<<dist<<endl;
-    // if(firing == 1)
-    // {
-    //     offset_y = 0.1616 * dist + 96.644;
-    // }
-    // else if(firing == 2)
-    // {
-    //     offset_y = 0.0517+127.69;
-    // }
+    cout<<dist<<endl;
+    if(firing == 1)
+    {
+        /* // offset_y = 0.1616 * dist + 96.644; */
+        if(dist <= 2200)
+            {
+                offset_y = 0;
+            }
+            else if(dist > 2200 && dist <= 3200)
+            {
+                offset_y = 105;
+            } 
+            else if(dist > 3800&& dist <=4500)
+            {
+                offset_y = 305;
+            }
+            else if(dist > 4800)
+            {
+                offset_y = 405;
+            }
+
+    }
+    else if(firing == 2)
+    {
+        /* offset_y = 0.0517 * dist + 27.69; */
+            if(dist <= 2500)
+            {
+                offset_y = 0;
+            }
+            else if(dist > 2500 && dist <= 3200)
+            {
+                offset_y = 105;
+            }
+            else if(dist > 3200 && dist <= 4500)
+            {
+                offset_y = 205;
+            } 
+            else if(dist > 4500)
+            {
+                offset_y = 305;
+            }
+    }
     // else if(firing == 3)
     // {
     //     if(dist < 2000)
@@ -271,7 +307,7 @@ void WorKing::Angle_compensate()
     //         }
     //     }
     // }
-    // pitch = pitch - offset_y / 100;
+    pitch = pitch - offset_y / 100;
     if (yaw > 0)
     {
         _yaw = 0;
@@ -295,8 +331,7 @@ void WorKing::Angle_compensate()
  */
 void WorKing::Automatic_fire()
 {
-    // line(frame, Point(0 , CAMERA_RESOLUTION_ROWS/2), Point(CAMERA_RESOLUTION_COLS, CAMERA_RESOLUTION_ROWS/2), Scalar(0, 255, 255));
-    // line(frame, Point(CAMERA_RESOLUTION_COLS/2 , 0), Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS), Scalar(0, 255, 255));
+    
     // cout<<"yaw = "<<yaw<<endl;
     //装甲板范围
     if(img.armor[img.optimal_armor].distinguish > 0)
@@ -310,7 +345,7 @@ void WorKing::Automatic_fire()
     // cout<<"offset_yaw = "<<offset_yaw<<endl;
     //自动开火判断
     if(fabs(yaw) <= offset_yaw 
-            && fabs(img.armor[img.optimal_armor].tan_angle) < 10 
+            && fabs(img.armor[img.optimal_armor].tan_angle) < 7 
             && depth < 5000 && img.lost_distance_armor < 200) 
     {    
         //是小陀螺
@@ -323,12 +358,12 @@ void WorKing::Automatic_fire()
         else
         {
             cout<<"正常模式"<<endl;
-            if(img.lost_distance_armor < 50 && depth < 3500 && img.roi_num > 10 && fire_num > 2)
+            if(img.lost_distance_armor < 50 && depth < 3500 && img.roi_num > 10 && fire_num > 400)
             {
                 is_shooting = 2;//自动
                 cout<<"你已经死了"<<endl;
             }
-            if(img.roi_num > 2)
+            else if(img.roi_num > 2)
             {   
                 is_shooting = 1;//单发
                 cout<<"biu"<<endl;

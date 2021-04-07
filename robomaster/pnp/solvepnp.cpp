@@ -32,8 +32,19 @@ void SolveP4p::arrange_Point(RotatedRect left_light, RotatedRect right_light)
  * @param _H 实际高度
  * @return float 返回深度
  */
-void SolveP4p::run_SolvePnp(float _W, float _H)
+void SolveP4p::run_SolvePnp(float _W, float _H, int _V)
 {
+    if(_V == 1)
+    {
+        fring_rate = 15;
+    }
+    else if(_V == 2)
+    {
+        fring_rate = 18;
+    }
+    else{
+        fring_rate = 30; 
+    }
     float half_x = _W * 0.5;
     float half_y = _H * 0.5;
 
@@ -350,17 +361,19 @@ void SolveP4p::get_Angle(const Mat &pos_in_ptz)
     {
         angle_x = static_cast<float>(atan2(xyz[0], xyz[2]));
     }
-    float target_h = ARMOR_BOTTOM_H - ROBOT_H;
-    float thta = -static_cast<float>(atan2(xyz[1], xyz[2]));          // 云台与目标点的相对角度
-    float balta = static_cast<float>(atan2(target_h, xyz[2])) - thta; // 云台与地面的相对角度
-    dist = static_cast<float>(xyz[2]);
-    angle_y = -getBuffPitch(dist / 1000, (target_h) / 1000, BULLET_SPEED);
+    // float target_h = ARMOR_BOTTOM_H - ROBOT_H;
+    // float thta = -static_cast<float>(atan2(xyz[1], xyz[2]));          // 云台与目标点的相对角度
+    // float balta = static_cast<float>(atan2(target_h, xyz[2])) - thta; // 云台与地面的相对角度
+    
+    // angle_y = -getBuffPitch(dist / 1000, (target_h) / 1000, 15);
+    // angle_y = static_cast<float>(atan2(xyz[1], xyz[2]));
+    // angle_y = angle_y * 180 / CV_PI; 
+    // angle_y += balta;
     /*------------------------------------北理珠---------------------------------------------------*/
-    angle_y += balta;
+    dist = static_cast<float>(xyz[2]);
     angle_x = static_cast<float>(angle_x) * 180 / CV_PI;
-    // angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
-    angle_y = static_cast<float>(atan2(xyz[1], xyz[2]));
-    angle_y = angle_y * 180 / CV_PI;
+    angle_y = static_cast<float>(angle_y) * 180 / CV_PI;
+    
 #if SHOW_ANGLE_INFORMATION == 1
     cout << "angle_x:" << angle_x << "     angle_y:" << angle_y << "    dist:" << dist << endl;
 #endif
