@@ -88,8 +88,8 @@ public:
     int blue_armor_gray_th = 50;
     int blue_armor_color_th = 70;
     //红色th参数
-    int red_armor_gray_th = 142; //60 45
-    int red_armor_color_th = 100;//192 95 10.50
+    int red_armor_gray_th = 11; //60 45
+    int red_armor_color_th = 11;//192 95 10.50
     // Point lost_armor_center;//上一帧装甲板位置
 
     int roi_num = 0;//roi计数

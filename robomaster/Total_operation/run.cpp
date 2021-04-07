@@ -62,7 +62,7 @@ void WorKing::Run()
         {
         case 0://自瞄
             img.num++;
-            // img.Pretreat(src_img, enemy_color);
+            // img.Pretreat_Rgb(src_img, enemy_color);
             img.pretreat_Hsv(src_img, enemy_color);
             data_success = img.Processing();
             if(data_success)
@@ -148,10 +148,10 @@ void WorKing::Run()
     //清空相机内存
     cap.cameraReleasebuff();
     // /* "Esc"-退出 */
-    // if (waitKey(1) == 'q') 
-    // {
-    //   break;
-    // }
+    if (waitKey(100) == 'q') 
+    {
+      break;
+    }
         //输出帧率
 #if FPS_SHOW == 1
     t = ((double)cv::getTickCount() - t) / cv::getTickFrequency(); //结束计时
@@ -166,7 +166,6 @@ void WorKing::Return_zero()
     data_type = 0;
     img.armor_success = false;
     img.armor_roi = Rect(0, 0, 0, 0);
-    // img.roi_num = 0;
     img.switch_armor = false;
     img.lost_armor_success = img.armor_success;
     yaw = 0;
@@ -214,7 +213,7 @@ bool WorKing::top()
         variance += pow(img.roi_num_law[i] - sum ,2);
     }
     variance = sqrt(variance/5);
-    if(variance < 5)
+    if(variance < 5 && variance!=0)
     {
         return true;
     }

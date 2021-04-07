@@ -44,14 +44,14 @@
   @note: 使用普通USB相机时，Opencv的VideoCapture接口的值
 */
 
-#define ISOPEN_INDUSTRY_CAPTURE 0
+#define ISOPEN_INDUSTRY_CAPTURE 1
 /**
   @brief: 是否使用工业相机
   @param: 0     使用工业相机
   @param: 1     使用普通USB相机
 */
 
-#define ROI_IMG 1
+#define ROI_IMG 0
 /**
  * @brief 打开ROI截取
  * @param 1 截取
@@ -64,7 +64,7 @@
  * @param 0 不显示
  */
 
-#define DRAW_LIGHT_IMG 0
+#define DRAW_LIGHT_IMG 1
 /**
  * @brief 是否绘制灯条
  * @param 1 绘制
@@ -78,7 +78,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 0
+#define SHOW_BIN_IMG 1
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -92,7 +92,7 @@
  * @param 0 蓝色
  */
 
-#define IS_PARAM_ADJUSTMENT 0
+#define IS_PARAM_ADJUSTMENT 1
 /**
   @brief 是否进入调参模式
   @param 0     否
@@ -138,8 +138,8 @@
  * 
  */
 #define CAMERA_EXPOSURETIME 800
-#define CAMERA_RESOLUTION_COLS 960 //16
-#define CAMERA_RESOLUTION_ROWS 600 // 2
+#define CAMERA_RESOLUTION_COLS 640 //16
+#define CAMERA_RESOLUTION_ROWS 400 // 2
 #define CAMERA_RESOLUTION_COLS_FOV ((1280 - CAMERA_RESOLUTION_COLS) * 0.5)
 #define CAMERA_RESOLUTION_ROWS_FOV ((1024 - CAMERA_RESOLUTION_ROWS) * 0.5)
 #define CAMERA_RED_GAIN 100
@@ -157,7 +157,7 @@
 /*---------------------------------------------------*/
 
 #if ISOPEN_INDUSTRY_CAPTURE == 1
-#define CAMERA_PARAM_FILE "/home/xx/github/armorplate/camera.xml"
+#define CAMERA_PARAM_FILE "/home/xx/roboxx_github/roboxx_/robomaster/camera.xml"
 
 #elif ISOPEN_INDUSTRY_CAPTURE == 0
 #define CAMERA_PARAM_FILE "/home/xx/roboxx_github/roboxx_/robomaster/camera.xml"
