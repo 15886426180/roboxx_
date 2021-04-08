@@ -60,7 +60,7 @@ void WorKing::Run()
     src_img = frame;
 #endif
         pattern = 0;
-        // enemy_color = 1;
+        enemy_color = 1;
         switch (this->pattern)
         {
         case 0://自瞄
@@ -99,7 +99,7 @@ void WorKing::Run()
                 Size(img.armor[img.optimal_armor].width, img.armor[img.optimal_armor].height), 
                 img.armor[img.optimal_armor].tan_angle);
             pnp.vertex_Sort(box);
-            rectangle(frame, box.boundingRect(), Scalar(0, 255, 0), 3, 8);
+            rectangle(frame, box.boundingRect(), Scalar(0, 0, 255), 9, 8);
             
             //pnp角度结算
             if(img.armor[img.optimal_armor].distinguish == 0)
@@ -339,26 +339,26 @@ void WorKing::Automatic_fire()
         offset_yaw = 6.5441*exp(-0.001*depth) + 2;
     }
     else{
-        offset_yaw = 6.5441*exp(-0.001*depth) + 0.5;
+        offset_yaw = 6.5441*exp(-0.001*depth)+0.5;
     }
     
     // cout<<"offset_yaw = "<<offset_yaw<<endl;
     //自动开火判断
     if(fabs(yaw) <= offset_yaw 
-            && fabs(img.armor[img.optimal_armor].tan_angle) < 7 
+            && fabs(img.armor[img.optimal_armor].tan_angle) < 10 
             && depth < 5000 && img.lost_distance_armor < 200) 
     {    
-        //是小陀螺
-        if(judge_top)
-        {
-            cout<<"小陀螺模式进入"<<endl;
-            is_shooting = 1;//单发
-            cout<<"biu"<<endl;
-        }
-        else
-        {
+        // //是小陀螺
+        // if(judge_top)
+        // {
+        //     cout<<"小陀螺模式进入"<<endl;
+        //     is_shooting = 1;//单发
+        //     cout<<"biu"<<endl;
+        // }
+        // else
+        // {
             cout<<"正常模式"<<endl;
-            if(img.lost_distance_armor < 50 && depth < 3500 && img.roi_num > 10 && fire_num > 400)
+            if(img.lost_distance_armor < 50 && depth < 3500 && img.roi_num > 10 && fire_num > 100)
             {
                 is_shooting = 2;//自动
                 cout<<"你已经死了"<<endl;
@@ -368,7 +368,7 @@ void WorKing::Automatic_fire()
                 is_shooting = 1;//单发
                 cout<<"biu"<<endl;
             }
-        }        
+        // }        
         //开火计数
         fire_num++;
     }

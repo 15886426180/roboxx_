@@ -54,6 +54,7 @@ void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
     createTrackbar("S_MAX:", "src_img", &s_max, 255, NULL);
     createTrackbar("V_MIN:", "src_img", &v_min, 255, NULL);
     createTrackbar("V_MAX:", "src_img", &v_max, 255, NULL);
+    createTrackbar("GRAY_TH:", "src_img", &armor_gray_th, 255, NULL);
 #endif
     if (enemy_color == 0)
     {
@@ -78,8 +79,8 @@ void ImageProcess::pretreat_Hsv(Mat src_img, int enemy_color)
     Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
     dilate(bin_img_color, bin_img_color, element);
 #if SHOW_BIN_IMG == 1    
-    imshow("gray_img", bin_img_gray);
-    imshow("mask", bin_img_color);
+    // imshow("gray_img", bin_img_gray);
+    // imshow("mask", bin_img_color);
     imshow("src_img", bin_img_color);
 #endif
     
@@ -138,16 +139,16 @@ void ImageProcess::Pretreat_Rgb(Mat src_img, int enemy_color)
 
     Mat element = getStructuringElement(MORPH_ELLIPSE, cv::Size(3, 7));
 
-    dilate(bin_img_gray, bin_img_gray, element);
-    dilate(bin_img_color, bin_img_color, element);
+    // dilate(bin_img_gray, bin_img_gray, element);
+    // dilate(bin_img_color, bin_img_color, element);
     bitwise_and(bin_img_color, bin_img_gray, bin_img_color);
     dilate(bin_img_color, bin_img_color, element);
 #if SHOW_BIN_IMG == 1
-    imshow("gray_img", bin_img_gray);
-    imshow("mask", bin_img_color);
+    // imshow("gray_img", bin_img_gray);
+    // imshow("mask", bin_img_color);
     imshow("src_img", bin_img_color);
 #endif
-    //保存处理后的图片
+    //保存处理后的图
     this->mask = bin_img_color;
     this->gray_img = bin_img_gray;
     
@@ -246,6 +247,7 @@ bool ImageProcess::Processing()
     //多装甲板筛选
     armor_Screening();
     // direction_Judgment();
+    // cout<<"angle:"<<armor[optimal_armor].left_light.angle - armor[optimal_armor].right_light.angle<<endl;
     return true;
 }
 
@@ -267,7 +269,7 @@ void ImageProcess::armor_Screening()
             
             //判断左右两个灯条y点差值
             int diff_y = fabs(armor[i].left_light.center.y - armor[i].right_light.center.y);
-            if(diff_y < armor[i].min_light_h * 0.15)
+            if(diff_y < armor[i].min_light_h * 0.2)
             {
                 armor[i].priority += 3;
             }
@@ -282,11 +284,11 @@ void ImageProcess::armor_Screening()
 
             //判断左右两点高度差
             int diff_h = fabs(armor[i].left_light_height - armor[i].right_light_height);
-            if(diff_h < armor[i].max_light_h * 0.1)
+            if(diff_h < armor[i].max_light_h * 0.2)
             {
                 armor[i].priority +=2;
             }
-            else if(diff_h < armor[i].min_light_h * 0.2)
+            else if(diff_h < armor[i].min_light_h * 0.3)
             {
                 armor[i].priority +=1;
             }
@@ -318,6 +320,10 @@ void ImageProcess::armor_Screening()
             {
                 armor[i].priority +=1; 
             }
+            if(armor[i].aspect_ratio < 2.1 && armor[i].aspect_ratio > 1.3)
+            {
+                armor[i].priority +=1;
+            }
             //优先小装甲板
             if(armor[i].distinguish == 0)
             {
@@ -328,19 +334,20 @@ void ImageProcess::armor_Screening()
             if(armor[i].priority > max_priority)
             {
                 optimal_armor = i;
-                // max_priority = armor[i].priority;
+                max_priority = armor[i].priority;
             }
             else if(armor[i].priority == max_priority)//优先级相同比较高度
             {
                 int temp_dist = Distance(armor[i].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
                 int temp_depth = Distance(armor[optimal_armor].armor_rect.center, Point(CAMERA_RESOLUTION_COLS/2, CAMERA_RESOLUTION_ROWS/2));
-                if(temp_dist < temp_depth)
+                
+                if(fabs(armor[i].height) >= fabs(armor[optimal_armor].height))
                 {
                     optimal_armor = i;
                 }
                 else
                 {
-                    if(fabs(armor[i].height) >= fabs(armor[optimal_armor].height))
+                    if(temp_dist < temp_depth)
                     {
                         optimal_armor = i;
                     }
@@ -405,7 +412,7 @@ void ImageProcess::fitting_Armor()
                         armor_count++;
                         armor.push_back(armor_data);
                         //绘制所有装甲板
-                        rectangle(frame, armor_data.armor_rect.boundingRect(), Scalar(0, 255, 0), 5, 8);
+                        // rectangle(frame, armor_data.armor_rect.boundingRect(), Scalar(255, 255, 0), 5, 8);
                         // armor_count++;//数据正确则保存
                     }
                 }
@@ -431,27 +438,27 @@ bool ImageProcess::light_Judge(int i, int j)
     armor_data.max_light_h = MAX(armor_data.right_light_height, armor_data.left_light_height);
     armor_data.left_right_h = armor_data.left_light_height / armor_data.right_light_height;
     armor_data.left_right_w = armor_data.left_light_width / armor_data.right_light_width;
-    if (armor_data.left_right_h < 2
+    if (armor_data.left_right_h < 1.9
             && armor_data.left_right_w > 0.2
             && armor_data.left_right_h > 0.5
             && armor_data.left_right_w < 5)
     {
         armor_data.height = (armor_data.right_light_height + armor_data.left_light_height) / 2.0f;
         // 两个灯条高度差不大
-        if (fabs(armor_data.left_light.center.y - armor_data.right_light.center.y) < armor_data.height/2)
+        if (fabs(armor_data.left_light.center.y - armor_data.right_light.center.y) < armor_data.height)
         {
-            if(fabs(armor_data.left_light_height  - armor_data.right_light_height) < armor_data.height/2)
+            if(fabs(armor_data.left_light_height  - armor_data.right_light_height) < armor_data.height)
             {
                 armor_data.width = Distance(armor_data.left_light.center, armor_data.right_light.center);
                 armor_data.aspect_ratio = armor_data.width/armor_data.height;//保存长宽比
                 // cout<<armor_data.left_light.angle - armor_data.right_light.angle<<endl;
-                if(fabs(armor_data.left_light.angle - armor_data.right_light.angle) < 5)//两侧灯条角度差
+                if(fabs(armor_data.left_light.angle - armor_data.right_light.angle) < 2)//两侧灯条角度差
                 {
                     if(armor_data.width * armor_data.height > 500)
                     {
-                        // cout<< armor_data.aspect_ratio<<endl;
+                        cout<< armor_data.aspect_ratio<<endl;
                         //装甲板长宽比
-                        if (armor_data.aspect_ratio < 3.1f && armor_data.aspect_ratio > 0.6f)
+                        if (armor_data.aspect_ratio < 2.9f && armor_data.aspect_ratio > 0.9f)
                         {
                             armor_data.distinguish = 0;//小装甲板
                             return true;

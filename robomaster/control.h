@@ -78,7 +78,7 @@
  * @param 0 不绘制
  */
 
-#define SHOW_BIN_IMG 0
+#define SHOW_BIN_IMG 1
 /**
  * @brief 显示最终得到的二值化图片 
  * @param 1 显示
@@ -137,7 +137,7 @@
  * @brief 灯条实际宽度(mm)
  * 
  */
-#define CAMERA_EXPOSURETIME 1500
+#define CAMERA_EXPOSURETIME 800
 #define CAMERA_RESOLUTION_COLS 960 //16
 #define CAMERA_RESOLUTION_ROWS 600 // 2
 #define CAMERA_RESOLUTION_COLS_FOV ((1280 - CAMERA_RESOLUTION_COLS) * 0.5)
