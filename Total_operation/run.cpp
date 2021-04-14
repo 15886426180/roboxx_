@@ -49,6 +49,7 @@ void WorKing::Run()
             send_lock.lock();
             serial.RMserialWrite(_yaw, fabs(yaw)*100, _pitch, fabs(pitch)*100, depth, data_type, is_shooting); 
             send_lock.unlock();
+            this_thread::sleep_for(1ms);
             this_thread::sleep_for(SEND_LIMIT - (chrono::steady_clock::now() - t_s));
         }
     });
