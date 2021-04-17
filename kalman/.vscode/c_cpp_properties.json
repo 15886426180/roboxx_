@@ -1,0 +1,21 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/usr/local/include/",
+                "/usr/local/include/opencv4/",
+                "/usr/local/include/opencv4/opencv2/",
+                "/opt/gcc-latest/include/c++/11.0.1",
+                "${workspaceFolder}"
+            ],
+            "defines": [],
+            "compilerPath": "/opt/gcc-latest/bin/g++",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}
